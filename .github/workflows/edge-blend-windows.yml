@@ -1,0 +1,34 @@
+name: Edge blend Windows installer
+
+# Builds an unsigned Windows installer of this fork's edge blend branch, so it can be tested
+# on a church PC without installing Visual Studio build tools there.
+on:
+    push:
+        branches:
+            - "feature/edge-blend-group"
+    workflow_dispatch:
+
+jobs:
+    windows:
+        runs-on: windows-2022
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v5
+
+            - name: Install Node.js and NPM
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build installer
+              run: npm run release:local
+
+            - name: Upload installer
+              uses: actions/upload-artifact@v4
+              with:
+                  name: FreeShow-edge-blend-windows
+                  path: dist/*.exe
+                  retention-days: 30
