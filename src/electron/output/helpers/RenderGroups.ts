@@ -40,7 +40,9 @@ export class RenderGroups {
             aspect: w && h ? Math.round((w / h) * 1000) : null,
             transparent: !!output.transparent,
             cropping: output.cropping || null,
-            blending: output.blending || null
+            blending: output.blending || null,
+            // each projector of an edge blend group shows a different slice, so never share their pages
+            blendGroup: output.blendGroup ? `${output.blendGroup.groupId}:${output.blendGroup.index}` : null
         })
     }
 

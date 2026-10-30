@@ -102,7 +102,7 @@ void main() {
 
     float mask = pow(lightWeight(local.x) * brightness, 1.0 / gamma);
     float lift = blackLift(local.x);
-    color = lift + (1.0 - lift) * clamp(color, 0.0, 1.0) * mask;
+    color = max(clamp(color, 0.0, 1.0) * mask, vec3(lift));
     gl_FragColor = vec4(color, 1.0);
 }
 `

@@ -11,36 +11,11 @@
 // This file is the reference implementation. blendShader.ts mirrors the same formulas in GLSL;
 // keep the two in step (blendMath.test.ts covers both through the shared constants).
 
-export type BlendCurve = "linear" | "smoothstep" | "cosine"
+import type { BlendCurve, BlendGroupConfig, BlendPattern } from "../../../../types/Output"
+
+export type { BlendCurve, BlendGroupConfig, BlendPattern, BlendProjectorAdjust, BlendGroupMember } from "../../../../types/Output"
 
 export const BLEND_CURVES: BlendCurve[] = ["linear", "smoothstep", "cosine"]
-
-export interface BlendProjectorAdjust {
-    /** extra horizontal shift of this projector's slice in canvas px (fine alignment) */
-    offsetX?: number
-    /** extra vertical shift in canvas px */
-    offsetY?: number
-    /** light multiplier to match a brighter projector to a dimmer one (0.5..1) */
-    brightness?: number
-}
-
-export interface BlendGroupConfig {
-    /** number of projectors side by side (2..8) */
-    projectors: number
-    /** pixel size of one projector output */
-    projectorWidth: number
-    projectorHeight: number
-    /** overlap in px between projector i and i+1 (length projectors - 1) */
-    overlaps: number[]
-    /** projector gamma, usually 2.2 (2.0..2.6) */
-    gamma: number
-    curve: BlendCurve
-    /** black-level lift (signal 0..0.25) applied outside the overlaps so dark scenes match the brighter overlap */
-    blackLevel: number
-    /** px over which the black lift fades in from the overlap edge, avoids a hard step */
-    blackFeather: number
-    adjust?: BlendProjectorAdjust[]
-}
 
 export const DEFAULT_BLEND_GROUP: BlendGroupConfig = {
     projectors: 3,
@@ -160,11 +135,14 @@ export function blackLift(slice: BlendSlice, x: number, cfg: BlendGroupConfig): 
     return cfg.blackLevel * ramp(feather, "smoothstep")
 }
 
-/** final signal for one channel: content faded by the mask, then lifted towards the black level */
+/**
+ * final signal for one channel: content faded by the mask, never darker than the black lift.
+ * A max (CSS "lighten") only raises tones that are darker than the lift, so midtones outside the
+ * overlaps stay as they are; adding the lift on top would brighten them too.
+ */
 export function blendPixel(signal: number, slice: BlendSlice, x: number, cfg: BlendGroupConfig): number {
     const masked = clamp(signal, 0, 1) * signalMask(slice, x, cfg)
-    const lift = blackLift(slice, x, cfg)
-    return lift + (1 - lift) * masked
+    return Math.max(masked, blackLift(slice, x, cfg))
 }
 
 /**
@@ -183,9 +161,23 @@ export function simulateScreenLight(cfg: BlendGroupConfig, cx: number, signal: n
     return light
 }
 
-// CALIBRATION PATTERNS
+/**
+ * one row of the masks for a projector, left to right, one value (0..1) per projector pixel.
+ * `mask` multiplies the content; `lift` is the black-level lift, drawn as a grey of that value with
+ * the "lighten" blend mode over it (max per channel, which is blendPixel's formula).
+ */
+export function maskRows(cfg: BlendGroupConfig, index: number) {
+    const slice = getSlices(cfg)[index]
+    const mask = new Float32Array(slice.width)
+    const lift = new Float32Array(slice.width)
+    for (let x = 0; x < slice.width; x++) {
+        mask[x] = signalMask(slice, x + 0.5, cfg)
+        lift[x] = blackLift(slice, x + 0.5, cfg)
+    }
+    return { mask, lift, slice }
+}
 
-export type BlendPattern = "none" | "grid" | "white" | "gray" | "black" | "ramp" | "guides"
+// CALIBRATION PATTERNS
 
 /** numeric ids shared with the shader */
 export const PATTERN_IDS: Record<BlendPattern, number> = { none: 0, grid: 1, white: 2, gray: 3, black: 4, ramp: 5, guides: 6 }

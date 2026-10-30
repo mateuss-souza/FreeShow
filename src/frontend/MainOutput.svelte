@@ -5,6 +5,8 @@
     import type { Resolution } from "../types/Settings"
     import { getResolution } from "./components/helpers/output"
     import Output from "./components/output/Output.svelte"
+    import BlendedOutput from "./components/output/blend/BlendedOutput.svelte"
+    import { blendGroupOf } from "./components/output/blend/blendGroups"
     import { getStyleResolution } from "./components/slide/getStyleResolution"
     import StageLayout from "./components/stage/StageLayout.svelte"
     import { currentWindow, livePrepare, outputs, presenting, special, styles } from "./stores"
@@ -16,6 +18,9 @@
     $: outputId = Object.keys($outputs)[0]
 
     $: sceneStyleId = $outputs[outputId]?.out?.scene?.style
+
+    // one projector of an edge blend group shows its slice of the wide canvas
+    $: blendGroup = blendGroupOf($outputs[outputId])
 
     // get output resolution
     let width = 0
@@ -78,7 +83,14 @@
         // a canvas drawn every frame (effects) is never still
         const busy = document.getAnimations().some((a) => a.playState === "running") || !!rootEl.querySelector("[data-animated]")
         // markup without element ids (some random) or this output's id, which differ between identical pages
-        const dom = busy ? "" : contentHash(rootEl.innerHTML.replace(/ id="[^"]*"/g, "").split(outputId).join("~"))
+        const dom = busy
+            ? ""
+            : contentHash(
+                  rootEl.innerHTML
+                      .replace(/ id="[^"]*"/g, "")
+                      .split(outputId)
+                      .join("~")
+              )
         const state = `${busy}|${dom}|${appliedSeq}`
         if (state === reported) return
         reported = state
@@ -142,6 +154,8 @@
         <canvas class="presentCanvas" bind:this={presentCanvas}></canvas>
     {:else if $outputs[outputId]?.stageOutput}
         <StageLayout {outputId} stageId={$outputs[outputId].stageOutput} edit={false} />
+    {:else if loaded && $currentWindow === "output" && blendGroup}
+        <BlendedOutput {outputId} group={blendGroup} />
     {:else if loaded}
         <Output {outputId} style={getStyleResolution(resolution, width, height, "fit")} />
     {/if}

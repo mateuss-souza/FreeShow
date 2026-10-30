@@ -17,6 +17,8 @@ export interface Output {
     boundsLocked?: boolean
     cropping?: Cropping
     blending?: { left: number; right: number; rotate: number; opacity: number; centered: boolean; offset: number }
+    /** one projector of several overlapping into one wide, edge-blended image */
+    blendGroup?: BlendGroupMember
     screen: string | null
     alwaysOnTop?: boolean
     transparent?: boolean
@@ -94,4 +96,51 @@ export interface AnimationAction {
     extension?: string
     value?: number
     duration: number
+}
+
+// EDGE BLEND GROUPS
+
+export type BlendCurve = "linear" | "smoothstep" | "cosine"
+export type BlendPattern = "none" | "grid" | "white" | "gray" | "black" | "ramp" | "guides"
+
+export interface BlendProjectorAdjust {
+    /** extra horizontal shift of this projector's slice in canvas px (fine alignment) */
+    offsetX?: number
+    /** extra vertical shift in canvas px */
+    offsetY?: number
+    /** light multiplier to match a brighter projector to a dimmer one (0.3..1) */
+    brightness?: number
+}
+
+export interface BlendGroupConfig {
+    /** number of projectors side by side (2..8) */
+    projectors: number
+    /** pixel size of one projector output */
+    projectorWidth: number
+    projectorHeight: number
+    /** overlap in px between projector i and i+1 (length projectors - 1) */
+    overlaps: number[]
+    /** projector gamma, usually 2.2 */
+    gamma: number
+    curve: BlendCurve
+    /** black-level lift (signal 0..0.25) outside the overlaps, so dark scenes match the brighter overlap */
+    blackLevel: number
+    /** px over which the black lift fades in from the overlap edge */
+    blackFeather: number
+    adjust?: BlendProjectorAdjust[]
+}
+
+/** stored on every output in a group, so each output window has what it needs on its own */
+export interface BlendGroupMember {
+    groupId: string
+    /** this output's position, left to right */
+    index: number
+    /** output ids, left to right */
+    members: string[]
+    config: BlendGroupConfig
+    /** calibration pattern shown instead of content */
+    pattern?: BlendPattern
+    /** the style the group made for its wide resolution, and the style each output had before */
+    styleId?: string
+    previousStyle?: string
 }

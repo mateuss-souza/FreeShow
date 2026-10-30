@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { BLEND_CURVES, blackLift, canvasSize, getSlices, normalizeBlendGroup, ramp, signalMask, simulateScreenLight } from "./blendMath"
+import { BLEND_CURVES, blackLift, blendPixel, canvasSize, getSlices, normalizeBlendGroup, ramp, signalMask, simulateScreenLight } from "./blendMath"
 
 const three = normalizeBlendGroup({ projectors: 3, projectorWidth: 1920, projectorHeight: 1080, overlaps: [300, 300] })
 
@@ -75,5 +75,12 @@ describe("black level", () => {
         const overlap = simulateScreenLight(cfg, 1920 - 150, 0, leak)
         const centre = simulateScreenLight(cfg, 960, 0, leak)
         expect(centre).toBeCloseTo(overlap, 3)
+    })
+
+    it("leaves midtones alone outside the overlaps", () => {
+        const cfg = normalizeBlendGroup({ ...three, blackLevel: 0.1, blackFeather: 0 })
+        const [, b] = getSlices(cfg)
+        expect(blendPixel(0.5, b, 960, cfg)).toBe(0.5)
+        expect(blendPixel(0, b, 960, cfg)).toBeCloseTo(0.1, 10)
     })
 })

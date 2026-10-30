@@ -16,6 +16,7 @@
     import MaterialRadialPicker from "../inputs/MaterialRadialPicker.svelte"
     import MaterialToggleSwitch from "../inputs/MaterialToggleSwitch.svelte"
     import Tip from "../main/Tip.svelte"
+    import BlendGroupSettings from "./BlendGroupSettings.svelte"
 
     export let activateOutput = false
 
@@ -203,8 +204,11 @@
     $: isCropped = (cropping.left || 0) + (cropping.right || 0) + (cropping.top || 0) + (cropping.bottom || 0) > 0
     $: isEdgeBlending = blending.left || blending.right
 
+    let editBlendGroup = false
+    $: inBlendGroup = !!currentScreen.blendGroup
+
     let showMore = false
-    $: showMore = isCropped || isEdgeBlending
+    $: showMore = isCropped || isEdgeBlending || inBlendGroup
 </script>
 
 {#if editCropping}
@@ -248,6 +252,10 @@
             </div>
         </div>
     </div>
+{:else if editBlendGroup && screenId}
+    <MaterialButton class="popup-back" icon="back" iconSize={1.3} title="actions.back" on:click={() => (editBlendGroup = false)} />
+
+    <BlendGroupSettings outputId={screenId} />
 {:else}
     {#if !activateOutput}
         <MaterialButton class="popup-options {showMore ? 'active' : ''}" icon="options" iconSize={1.3} title={showMore ? "actions.close" : "create_show.more_options"} on:click={() => (showMore = !showMore)} white />
@@ -270,6 +278,9 @@
                 <p><T id="settings.edge_blending" /></p>
             </MaterialButton>
         </InputRow>
+        <MaterialButton variant="outlined" style="width: 100%;" icon="screen" on:click={() => (editBlendGroup = true)}>
+            <p><T id="screen.blend_group" /></p>
+        </MaterialButton>
     {/if}
 
     <br />
