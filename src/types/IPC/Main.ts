@@ -54,6 +54,7 @@ export enum Main {
     MAXIMIZE = "MAXIMIZE",
     MAXIMIZED = "MAXIMIZED",
     MINIMIZE = "MINIMIZE",
+    WINDOW_DRAG = "WINDOW_DRAG",
     FULLSCREEN = "FULLSCREEN",
     /////
     IMPORT = "IMPORT",
@@ -199,6 +200,7 @@ export interface MainSendPayloads {
     // DEV
     [Main.LOG]: any
     /////
+    [Main.WINDOW_DRAG]: { active: boolean }
     [Main.IMPORT]: { channel: string; format: { name: string; extensions: string[] } }
     [Main.IMPORT_FILES]: { id: string; paths: string[] }
     [Main.BIBLE]: { id: string; name: string }

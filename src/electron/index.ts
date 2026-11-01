@@ -340,6 +340,43 @@ const windowBounds = {
     }
 }
 
+// Moves the frameless main window with the cursor while the title bar is held (Windows).
+// Used instead of "-webkit-app-region: drag", whose hit-testing on some multi-monitor Windows setups
+// swallows clicks meant for the menus and window buttons inside the bar.
+let windowDragTimer: NodeJS.Timeout | null = null
+let windowDragSafety: NodeJS.Timeout | null = null
+export function dragMainWindow(active: boolean) {
+    if (windowDragTimer) clearInterval(windowDragTimer)
+    if (windowDragSafety) clearTimeout(windowDragSafety)
+    windowDragTimer = null
+    windowDragSafety = null
+    if (!active || !mainWindow || mainWindow.isDestroyed()) return
+
+    const start = screen.getCursorScreenPoint()
+    let bounds = mainWindow.getBounds()
+
+    // dragging a maximized window restores it under the cursor, like a native title bar
+    if (mainWindow.isMaximized()) {
+        const ratio = bounds.width ? (start.x - bounds.x) / bounds.width : 0.5
+        mainWindow.unmaximize()
+        sendMain(Main.MAXIMIZED, false)
+        const restored = mainWindow.getBounds()
+        bounds = { ...restored, x: Math.round(start.x - ratio * restored.width), y: start.y - 12 }
+        mainWindow.setPosition(bounds.x, bounds.y)
+    }
+
+    const offset = { x: start.x - bounds.x, y: start.y - bounds.y }
+    const size = { width: bounds.width, height: bounds.height }
+    windowDragTimer = setInterval(() => {
+        if (!mainWindow || mainWindow.isDestroyed()) return dragMainWindow(false)
+        const point = screen.getCursorScreenPoint()
+        // bounds, not position: crossing displays with different scaling must not resize the window
+        mainWindow.setBounds({ x: point.x - offset.x, y: point.y - offset.y, ...size })
+    }, 16)
+    // the page normally ends the drag on mouse up; never keep following the cursor if that is missed
+    windowDragSafety = setTimeout(() => dragMainWindow(false), 60000)
+}
+
 export function maximizeMain() {
     const isMaximized = !!mainWindow?.isMaximized()
     sendMain(Main.MAXIMIZED, !isMaximized)

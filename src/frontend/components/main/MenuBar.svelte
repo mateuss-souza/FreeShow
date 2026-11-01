@@ -38,6 +38,24 @@
 
     $: if ($topContextActive === false) activeID = null
 
+    // the bar moves the window itself: an OS drag region here can swallow clicks on the menus and buttons
+    let dragging = false
+    function dragStart(e: PointerEvent) {
+        if (e.button !== 0 || e.target !== e.currentTarget) return
+        ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+        dragging = true
+        sendMain(Main.WINDOW_DRAG, { active: true })
+    }
+    function dragEnd() {
+        if (!dragging) return
+        dragging = false
+        sendMain(Main.WINDOW_DRAG, { active: false })
+    }
+    function toggleMaximize(e: MouseEvent) {
+        if (e.target !== e.currentTarget) return
+        sendMain(Main.MAXIMIZE)
+    }
+
     const move = (e: any) => {
         if (!$topContextActive || activeID === e.target.id) return
         ;(document.activeElement as any)?.blur()
@@ -47,7 +65,7 @@
 
 <svelte:window on:click={click} on:contextmenu={click} />
 
-<main bind:clientHeight={y}>
+<main bind:clientHeight={y} on:pointerdown={dragStart} on:pointerup={dragEnd} on:pointercancel={dragEnd} on:lostpointercapture={dragEnd} on:dblclick={toggleMaximize}>
     {#if $topContextActive}
         <div class="contextMenu menu" style="inset-inline-start: {x}px; top: {y}px;" transition:fade={{ duration: 50 }}>
             {#key activeMenu}
@@ -104,13 +122,11 @@
         background-color: var(--primary-darkest);
         font-size: 0.9em;
         height: 25px;
-        -webkit-app-region: drag;
     }
 
     div,
     div :global(div) {
         display: flex;
-        -webkit-app-region: no-drag;
     }
 
     .window :global(button) {
@@ -146,7 +162,6 @@
         border-radius: 4px;
         padding: 8px 0;
         z-index: 6000;
-        -webkit-app-region: no-drag;
     }
 
     hr {

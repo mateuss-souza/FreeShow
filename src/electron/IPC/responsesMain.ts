@@ -3,7 +3,7 @@ import type { BrowserWindow, DesktopCapturerSource } from "electron"
 import { app, desktopCapturer, screen, shell, systemPreferences } from "electron"
 import os from "os"
 import path from "path"
-import { getMainWindow, isProd, mainWindow, maximizeMain, setGlobalMenu } from ".."
+import { dragMainWindow, getMainWindow, isProd, mainWindow, maximizeMain, setGlobalMenu } from ".."
 import type { MainResponses } from "../../types/IPC/Main"
 import { Main } from "../../types/IPC/Main"
 import { ToMain } from "../../types/IPC/ToMain"
@@ -78,6 +78,7 @@ export const mainResponses: MainResponses = {
     [Main.MAXIMIZE]: () => maximizeMain(),
     [Main.MAXIMIZED]: () => !!getMainWindow()?.isMaximized(),
     [Main.MINIMIZE]: () => getMainWindow()?.minimize(),
+    [Main.WINDOW_DRAG]: (data) => dragMainWindow(!!data?.active),
     [Main.FULLSCREEN]: () => getMainWindow()?.setFullScreen(!getMainWindow()?.isFullScreen()),
     [Main.SPELLCHECK]: (a) => correctSpelling(a),
     /// //////////////////////
