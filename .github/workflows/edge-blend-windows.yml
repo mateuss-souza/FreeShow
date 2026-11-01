@@ -35,15 +35,21 @@ jobs:
                   version="$base-blend.${{ github.run_number }}"
                   npm version "$version" --no-git-tag-version --allow-same-version
                   echo "Building $version"
-                  # tag this exact commit, so the release points at what was built
-                  git tag "v$version"
-                  git push origin "v$version"
+                  echo "FORK_VERSION=$version" >> "$GITHUB_ENV"
 
             - name: Install dependencies
               run: npm ci
 
             - name: Build app
               run: npm run build
+
+            # one release created up front at this commit: electron-builder uploads files in parallel and
+            # would otherwise race and create duplicate releases for the same tag
+            - name: Create release
+              shell: bash
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: gh release create "v$FORK_VERSION" --prerelease --target "$GITHUB_SHA" --title "$FORK_VERSION" --notes "Edge blend build $FORK_VERSION"
 
             - name: Build installer and publish release
               env:
