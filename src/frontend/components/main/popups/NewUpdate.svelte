@@ -6,15 +6,17 @@
     import HRule from "../../input/HRule.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import { registerPopupSubmit } from "../../../utils/popup"
+    import { FORK_RELEASES_URL } from "../../../utils/forkInfo"
+    import { newToast } from "../../../utils/common"
 
     registerPopupSubmit(download)
 
     let changelog = ($popupData.changelog || "").replaceAll("\r\n", "<br>").replaceAll("-", "•")
-    let latestVersion = $popupData.latestVersion
 
+    // downloads in the background and installs when FreeShow is closed, so a running service is never interrupted
     function download() {
-        const isBeta = latestVersion.includes("-beta")
-        sendMain(Main.URL, isBeta ? "https://github.com/ChurchApps/FreeShow/releases" : "https://freeshow.app/?download")
+        sendMain(Main.AUTO_UPDATE)
+        newToast("about.fork_update_downloading")
 
         activePopup.set(null)
         popupData.set({})
@@ -30,7 +32,10 @@
 {/if}
 
 <MaterialButton variant="contained" icon="download" on:click={download}>
-    <T id="about.download_latest" />
+    <T id="about.fork_update_install" />
+</MaterialButton>
+<MaterialButton variant="text" small on:click={() => sendMain(Main.URL, FORK_RELEASES_URL)}>
+    <T id="about.fork_update_manual" />
 </MaterialButton>
 
 <div class="changelog">

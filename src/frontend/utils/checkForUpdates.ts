@@ -1,5 +1,6 @@
 import { get } from "svelte/store"
 import { activePopup, alertUpdates, isDev, popupData, special } from "./../stores"
+import { FORK_REPO } from "./forkInfo"
 
 interface UpdateData {
     latestVersion: string
@@ -8,7 +9,7 @@ interface UpdateData {
 }
 
 export async function getUpdateData(currentVersion: string, includeBeta: boolean): Promise<UpdateData> {
-    const response = await fetch("https://api.github.com/repos/ChurchApps/freeshow/releases")
+    const response = await fetch(`https://api.github.com/repos/${FORK_REPO}/releases`)
     const data = await response.json()
 
     const latestAll = data.filter((a: any) => a.draft === false)[0]
@@ -28,7 +29,8 @@ export async function getUpdateData(currentVersion: string, includeBeta: boolean
 
 export function checkForUpdates(currentVersion: string) {
     if (get(isDev) || get(alertUpdates) === false) return
-    const includeBeta = currentVersion.includes("-beta") || get(special).betaVersionAlert
+    // fork builds are versioned x.y.z-blend.N and published as pre-releases
+    const includeBeta = currentVersion.includes("-beta") || currentVersion.includes("-blend") || get(special).betaVersionAlert
 
     getUpdateData(currentVersion, includeBeta)
         .then(({ latestVersion, changelog, hasUpdate }) => {

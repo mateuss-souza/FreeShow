@@ -5,3 +5,11 @@ win:
 
 mac:
     identity: null
+
+# this fork updates from its own GitHub releases (embedded in the app as app-update.yml)
+publish:
+    provider: github
+    owner: mateuss-souza
+    repo: FreeShow
+    releaseType: prerelease
+    channel: blend

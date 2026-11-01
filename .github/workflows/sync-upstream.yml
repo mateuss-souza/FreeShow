@@ -1,0 +1,60 @@
+name: Sync with FreeShow
+
+# Weekly: merges the official FreeShow into this fork, then builds a new installer.
+# On a merge conflict the run fails (GitHub emails the owner) and nothing is pushed.
+# Scheduled runs only start from the repository's default branch.
+on:
+    schedule:
+        - cron: "17 6 * * 2" # Tuesdays 03:17 in Brazil, far from any service
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    actions: write
+
+jobs:
+    sync:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out the fork
+              uses: actions/checkout@v5
+              with:
+                  ref: feature/edge-blend-group
+                  fetch-depth: 0
+
+            - name: Merge the official FreeShow
+              id: merge
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git remote add upstream https://github.com/ChurchApps/FreeShow.git
+                  git fetch upstream main
+                  if git merge-base --is-ancestor upstream/main HEAD; then
+                      echo "Already up to date"
+                      echo "changed=false" >> "$GITHUB_OUTPUT"
+                      exit 0
+                  fi
+                  git merge --no-edit upstream/main
+                  echo "changed=true" >> "$GITHUB_OUTPUT"
+
+            - name: Install Node.js and NPM
+              if: steps.merge.outputs.changed == 'true'
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+
+            # never ship a merge that breaks the edge blend
+            - name: Run edge blend tests
+              if: steps.merge.outputs.changed == 'true'
+              run: |
+                  npm ci --ignore-scripts
+                  npx vitest run --config config/testing/vitest.config.ts src/frontend/components/output/blend
+
+            # a push by this token does not start other workflows, so the build is started explicitly
+            - name: Push and build
+              if: steps.merge.outputs.changed == 'true'
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  git push origin HEAD:feature/edge-blend-group
+                  gh workflow run edge-blend-windows.yml --ref feature/edge-blend-group

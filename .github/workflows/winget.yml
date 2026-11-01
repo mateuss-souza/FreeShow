@@ -5,6 +5,7 @@ on:
 
 jobs:
     publish:
+        if: github.repository == 'ChurchApps/FreeShow'
         runs-on: ubuntu-latest
         steps:
             - name: WinGet Releaser

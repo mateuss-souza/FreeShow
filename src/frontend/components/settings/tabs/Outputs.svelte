@@ -22,6 +22,7 @@
     import MaterialPopupButton from "../../inputs/MaterialPopupButton.svelte"
     import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
+    import BlendGroupSettings from "../BlendGroupSettings.svelte"
 
     let outputsList: Output[] = []
     $: outputsList = sortObject(sortByName(keysToID($outputs)), "stageOutput")
@@ -385,6 +386,13 @@
 
     <MaterialPopupButton label="settings.output_screen" value={outputLabel} name={outputLabel} icon={currentOutput?.boundsLocked ? "locked" : "screen"} popupId="choose_screen" />
     <MaterialToggleSwitch label="settings.always_on_top" checked={currentOutput?.alwaysOnTop !== false} defaultValue={true} on:change={(e) => updateOutput("alwaysOnTop", e.detail)} />
+{/if}
+
+{#if currentOutput?.id && !currentOutput.invisible && !currentOutput.stageOutput}
+    <!-- several projectors blended into one wide image -->
+    <Title label="screen.blend_group" icon="screen" />
+
+    <BlendGroupSettings outputId={currentOutput.id} />
 {/if}
 
 {#if currentOutput?.blackmagic}

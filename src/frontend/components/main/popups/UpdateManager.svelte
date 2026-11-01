@@ -10,6 +10,7 @@
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
     import InputRow from "../../input/InputRow.svelte"
     import { registerPopupSubmit } from "../../../utils/popup"
+    import { newToast } from "../../../utils/common"
 
     registerPopupSubmit(downloadLatest)
 
@@ -37,7 +38,7 @@
 
         try {
             const currentVersion = $version
-            const includeBeta = currentVersion.includes("-beta") || $special.betaVersionAlert
+            const includeBeta = currentVersion.includes("-beta") || currentVersion.includes("-blend") || $special.betaVersionAlert
             const updateData = await getUpdateData(currentVersion, includeBeta)
 
             latestVersion = updateData.latestVersion
@@ -54,8 +55,9 @@
     function downloadLatest() {
         if (!hasUpdate || !latestVersion) return
 
-        const isBeta = latestVersion.includes("-beta")
-        sendMain(Main.URL, isBeta ? "https://github.com/ChurchApps/FreeShow/releases" : "https://freeshow.app/?download")
+        // fork build: background download from the fork's releases, installed when FreeShow is closed
+        sendMain(Main.AUTO_UPDATE)
+        newToast("about.fork_update_downloading")
     }
 
     onMount(checkUpdates)

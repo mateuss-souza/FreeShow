@@ -1,12 +1,19 @@
 name: Edge blend Windows installer
 
-# Builds an unsigned Windows installer of this fork's edge blend branch, so it can be tested
-# on a church PC without installing Visual Studio build tools there.
+# Builds an unsigned Windows installer of this fork and publishes it as a GitHub pre-release.
+# Installed copies check these releases and offer the update (installed when FreeShow is closed).
 on:
     push:
         branches:
             - "feature/edge-blend-group"
     workflow_dispatch:
+
+permissions:
+    contents: write
+
+concurrency:
+    group: edge-blend-windows
+    cancel-in-progress: false
 
 jobs:
     windows:
@@ -20,11 +27,28 @@ jobs:
               with:
                   node-version: 22
 
+            # x.y.z from upstream's version, then -blend.<build number>, so every build is newer than the last
+            - name: Set fork version
+              shell: bash
+              run: |
+                  base=$(node -p "require('./package.json').version.split('-')[0]")
+                  version="$base-blend.${{ github.run_number }}"
+                  npm version "$version" --no-git-tag-version --allow-same-version
+                  echo "Building $version"
+                  # tag this exact commit, so the release points at what was built
+                  git tag "v$version"
+                  git push origin "v$version"
+
             - name: Install dependencies
               run: npm ci
 
-            - name: Build installer
-              run: npm run release:local
+            - name: Build app
+              run: npm run build
+
+            - name: Build installer and publish release
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: npx electron-builder --config config/building/electron-builder.local.yaml --publish always
 
             - name: Upload installer
               uses: actions/upload-artifact@v4

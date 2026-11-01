@@ -48,7 +48,7 @@
         "centered": "Centered",
         "edge_blending_tip": "Blend together multiple outputs/projectors for a more seamless transition",
         "cropping_tip": "Fine adjust the window content position by cropping the sides",
-        "blend_group": "Projector blend group",
+        "blend_group": "Projector edge blend",
         "blend_group_tip": "Pick the outputs whose projectors overlap into one wide image. They are ordered left to right by screen position.",
         "blend_group_create": "Create blend group",
         "blend_group_remove": "Remove blend group",
@@ -88,7 +88,10 @@
         "new_update": "New update available",
         "download_latest": "Download the latest version",
         "download_auto": "You have auto update enabled, please wait a few minutes for the update to be downloaded and installed automatically, then restart the application.",
-        "changes": "What's new"
+        "changes": "What's new",
+        "fork_update_install": "Download update (installs when FreeShow closes)",
+        "fork_update_manual": "Open the releases page",
+        "fork_update_downloading": "Downloading the update. It installs the next time you close FreeShow."
     },
     "tooltip": {
         "project": "Create a new project where you can add and arrange shows.",
