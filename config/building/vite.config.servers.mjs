@@ -8,7 +8,9 @@ export const servers = {
     remote: { typescript: true },
     stage: { typescript: true },
     controller: { typescript: true },
-    output_stream: { typescript: true }
+    output_stream: { typescript: true },
+    listen_web: { typescript: true },
+    listen_capture: { typescript: true }
 }
 
 // Copy static files for the server
@@ -28,11 +30,15 @@ function copyServerFiles(id) {
         { src: resolve(root, "src/server/sw.js"), dest: resolve(dest, "sw.js") }
     ]
 
+    // the hidden capture page is not a web app
+    if (id === "listen_capture") files.splice(1, 1)
+
+    if (id === "listen_web") {
+        files.push({ src: resolve(root, `src/server/${id}/keepawake.mp4`), dest: resolve(dest, "keepawake.mp4") })
+    }
+
     if (id === "stage") {
-        files.push(
-            { src: resolve(root, `src/server/${id}/html/navigation.js`), dest: resolve(dest, "html/navigation.js") },
-            { src: resolve(root, `src/server/${id}/html/show.css`), dest: resolve(dest, "html/show.css") }
-        )
+        files.push({ src: resolve(root, `src/server/${id}/html/navigation.js`), dest: resolve(dest, "html/navigation.js") }, { src: resolve(root, `src/server/${id}/html/show.css`), dest: resolve(dest, "html/show.css") })
 
         const htmlDest = resolve(dest, "html")
         if (!existsSync(htmlDest)) {

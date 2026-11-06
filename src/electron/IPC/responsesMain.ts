@@ -79,6 +79,11 @@ export const mainResponses: MainResponses = {
     [Main.MAXIMIZED]: () => !!getMainWindow()?.isMaximized(),
     [Main.MINIMIZE]: () => getMainWindow()?.minimize(),
     [Main.WINDOW_DRAG]: (data) => dragMainWindow(!!data?.active),
+    // loaded on first use, so the audio engine costs nothing until Listen is opened
+    [Main.LISTEN_GET]: () => require("../listen/ListenServer").getListenState(),
+    [Main.LISTEN_SET_CONFIG]: (data) => require("../listen/ListenServer").setListenConfig(data),
+    [Main.LISTEN_DEVICES]: () => require("../listen/ListenServer").refreshListenDevices(),
+    [Main.LISTEN_STATUS]: () => require("../listen/ListenServer").getListenState().status,
     [Main.FULLSCREEN]: () => getMainWindow()?.setFullScreen(!getMainWindow()?.isFullScreen()),
     [Main.SPELLCHECK]: (a) => correctSpelling(a),
     /// //////////////////////

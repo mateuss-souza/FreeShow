@@ -1818,5 +1818,33 @@
         "translation_description_multiline": "Adiciona todos os idiomas em uma única caixa de texto em linhas alternadas. (Como no Songbeamer)",
         "translation_description_textboxes": "Adiciona cada idioma como uma caixa de texto separada ao slide.",
         "translation_description_layouts": "Cria um conjunto único de slides e um layout para cada idioma."
+    },
+    "listen": {
+        "title": "Ouvir: áudio no celular",
+        "enabled": "Enviar o áudio da igreja para os celulares",
+        "channel": "Canal",
+        "channel_name": "Nome do canal",
+        "source": "Fonte de áudio",
+        "source_off": "Desligado",
+        "source_loopback": "Áudio do computador (YouTube, vídeos)",
+        "device": "Dispositivo de áudio",
+        "not_connected": "desconectado",
+        "stereo": "Estéreo (música)",
+        "level": "Nível",
+        "live": "Ao vivo",
+        "listeners": "ouvindo",
+        "add_channel": "Adicionar canal",
+        "refresh_devices": "Atualizar dispositivos",
+        "create_overlay": "Criar sobreposição com QR",
+        "overlay_name": "QR Ouvir",
+        "overlay_text": "Ouça no seu celular",
+        "overlay_created": "Sobreposição \"QR Ouvir\" criada. Ative em qualquer tela pela aba Sobreposições.",
+        "test_mode": "Teste de atraso (clique a cada 2 s)",
+        "page_title": "Título da página no celular",
+        "default_title": "Ouvir",
+        "address": "Endereço no QR code",
+        "port": "Porta da página",
+        "media_port": "Porta do áudio (UDP/TCP)",
+        "max_listeners": "Máximo de ouvintes"
     }
 }

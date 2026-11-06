@@ -1853,5 +1853,33 @@
         "confidence_highest": "If confident",
         "confidence_high": "If high confidence",
         "confidence_medium": "If medium confidence"
+    },
+    "listen": {
+        "title": "Listen: audio to phones",
+        "enabled": "Send church audio to phones",
+        "channel": "Channel",
+        "channel_name": "Channel name",
+        "source": "Audio source",
+        "source_off": "Off",
+        "source_loopback": "Computer audio (YouTube, videos)",
+        "device": "Audio device",
+        "not_connected": "not connected",
+        "stereo": "Stereo (music)",
+        "level": "Level",
+        "live": "Live",
+        "listeners": "listening",
+        "add_channel": "Add channel",
+        "refresh_devices": "Refresh devices",
+        "create_overlay": "Create QR overlay",
+        "overlay_name": "Listen QR",
+        "overlay_text": "Listen on your phone",
+        "overlay_created": "Overlay \"Listen QR\" created. Turn it on for any screen in Overlays.",
+        "test_mode": "Latency test (click every 2 s)",
+        "page_title": "Phone page title",
+        "default_title": "Listen",
+        "address": "Address in the QR code",
+        "port": "Page port",
+        "media_port": "Audio port (UDP/TCP)",
+        "max_listeners": "Maximum listeners"
     }
 }

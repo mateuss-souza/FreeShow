@@ -30,6 +30,7 @@ win:
         - "!**/node_modules/openmediatransport/lib/{macos,linux-*,win-arm64}/**"
         - "!**/node_modules/better-sqlite3/prebuilds/{darwin-*,linux*,win32-arm64}.node"
     asarUnpack:
+        - "**/node_modules/mediasoup/worker/out/Release/**"
         - "**/node_modules/macadam/**/*.node"
         - "**/node_modules/libspotifyctl/**/*"
         - "**/node_modules/openmediatransport/**"
@@ -47,6 +48,7 @@ linux:
         - "!**/node_modules/openmediatransport/lib/{macos,win-*}/**"
         - "!**/node_modules/better-sqlite3/prebuilds/{darwin-*,linuxmusl-*,win32-*}.node"
     asarUnpack:
+        - "**/node_modules/mediasoup/worker/out/Release/**"
         - "**/node_modules/grandiose/**"
         - "**/node_modules/openmediatransport/**"
         - "**/node_modules/macadam/**/*.node"
@@ -75,6 +77,7 @@ mac:
         - "!**/node_modules/openmediatransport/lib/{linux-*,win-*}/**"
         - "!**/node_modules/better-sqlite3/prebuilds/{linux*,win32-*}.node"
     asarUnpack:
+        - "**/node_modules/mediasoup/worker/out/Release/**"
         - "**/node_modules/macadam/**/*.node"
         - "**/node_modules/openmediatransport/**"
         - "**/node_modules/sherpa-onnx-*/**"

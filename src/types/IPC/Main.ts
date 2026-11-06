@@ -1,3 +1,4 @@
+import type { ListenConfig, ListenStatus } from "../Listen"
 import type { Display } from "electron"
 import type { ExifData } from "exif"
 import type { Stats } from "fs"
@@ -55,6 +56,11 @@ export enum Main {
     MAXIMIZED = "MAXIMIZED",
     MINIMIZE = "MINIMIZE",
     WINDOW_DRAG = "WINDOW_DRAG",
+    // LISTEN (audio to phones)
+    LISTEN_GET = "LISTEN_GET",
+    LISTEN_SET_CONFIG = "LISTEN_SET_CONFIG",
+    LISTEN_DEVICES = "LISTEN_DEVICES",
+    LISTEN_STATUS = "LISTEN_STATUS",
     FULLSCREEN = "FULLSCREEN",
     /////
     IMPORT = "IMPORT",
@@ -201,6 +207,7 @@ export interface MainSendPayloads {
     [Main.LOG]: any
     /////
     [Main.WINDOW_DRAG]: { active: boolean }
+    [Main.LISTEN_SET_CONFIG]: Partial<ListenConfig>
     [Main.IMPORT]: { channel: string; format: { name: string; extensions: string[] } }
     [Main.IMPORT_FILES]: { id: string; paths: string[] }
     [Main.BIBLE]: { id: string; name: string }
@@ -341,6 +348,10 @@ export interface MainReturnPayloads {
     // WINDOW
     [Main.CLOSE]: boolean | void
     [Main.MAXIMIZED]: boolean
+    [Main.LISTEN_GET]: { config: ListenConfig; status: ListenStatus }
+    [Main.LISTEN_SET_CONFIG]: { config: ListenConfig; status: ListenStatus }
+    [Main.LISTEN_DEVICES]: ListenStatus
+    [Main.LISTEN_STATUS]: ListenStatus
     /////////////////////
     [Main.BIBLE]: { id: string; error?: string; content?: [string, Bible] }
     [Main.SHOW]: { id: string; error?: string; content?: [string, Show] }

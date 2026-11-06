@@ -171,6 +171,11 @@ async function startApp() {
 
     createMain()
 
+    // audio to phones in the room (starts only if it was turned on)
+    Promise.resolve()
+        .then(() => require("./listen/ListenServer").initListen())
+        .catch(console.error)
+
     // prevent display sleeping
     powerSaveBlockerId = powerSaveBlocker.start("prevent-display-sleep")
 }

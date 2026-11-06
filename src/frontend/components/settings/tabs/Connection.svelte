@@ -19,6 +19,7 @@
     import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
     import Tip from "../../main/Tip.svelte"
+    import ListenSettings from "../../listen/ListenSettings.svelte"
 
     let ip = "localhost"
 
@@ -278,6 +279,10 @@
 
     <MaterialToggleSwitch label="" checked={$special.remoteController} on:change={(e) => toggleRemoteController(e.detail)} />
 </InputRow>
+
+<!-- live church audio to phones in the room -->
+<Title label="listen.title" icon="volume" />
+<ListenSettings />
 
 {#if !$providerConnections.planningcenter && (!$providerConnections.churchApps || cloudOnly.churchApps) && !$providerConnections.amazinglife && !$providerConnections.onstage}
     <!-- No provider connected - show connection options -->
