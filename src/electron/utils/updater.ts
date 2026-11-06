@@ -15,6 +15,11 @@ function setUpdateStatus(status: UpdateStatus) {
     sendMain(Main.UPDATE_STATUS, status)
 }
 
+// the UI can ask for the current status (e.g. after a reload)
+export function getUpdateStatus() {
+    return lastStatus
+}
+
 function listenForUpdates() {
     if (listening) return
     listening = true
