@@ -13,7 +13,8 @@ interface Pipe {
     stream: MediaStream
     source: MediaStreamAudioSourceNode
     analyser: AnalyserNode
-    output: MediaStreamAudioDestinationNode
+    /** null when the source track is sent as is (no Web Audio in the path) */
+    output: MediaStreamAudioDestinationNode | null
     producer: Producer | null
 }
 
@@ -56,8 +57,13 @@ socket.on("config", (next) => {
 socket.on("listDevices", async (_data: any, ack: (list: ListenDevice[]) => void) => ack(await listDevices()))
 navigator.mediaDevices.addEventListener("devicechange", () => {
     pushDevices()
-    // a device that came back (USB replugged) is picked up again
-    enqueue(applyConfig)
+    enqueue(async () => {
+        // system audio follows the Windows default output: headphones plugged in or another
+        // output chosen leaves the old capture stuck on the previous device, so it is reopened
+        for (const [id, pipe] of pipes) if (pipe.key.startsWith("loopback|")) closePipe(id)
+        // a device that came back (USB replugged) is picked up again
+        await applyConfig()
+    })
 })
 
 async function setupTransport() {
@@ -79,7 +85,9 @@ async function setupTransport() {
     })
 }
 
-const pipeKey = (c: ListenChannelConfig) => [c.source, c.deviceId || "", c.stereo ? "s" : "m"].join("|")
+// system audio is sent as is, except in the latency test (the click is mixed in with Web Audio)
+const sendDirect = (c: ListenChannelConfig) => c.source === "loopback" && !config.testMode
+const pipeKey = (c: ListenChannelConfig) => [c.source, c.deviceId || "", c.stereo ? "s" : "m", sendDirect(c) ? "direct" : "mixed"].join("|")
 
 async function applyConfig() {
     if (!transport) return
@@ -148,14 +156,19 @@ async function resolveDeviceId(channel: ListenChannelConfig) {
 
 async function openPipe(channel: ListenChannelConfig) {
     const stream = await getSourceStream(channel)
-    if (!ctx) ctx = new AudioContext({ latencyHint: "interactive", sampleRate: 48000 })
+    // the device's own rate: forcing 48 kHz on a 44.1 kHz computer adds a resampler that can sound robotic
+    if (!ctx) ctx = new AudioContext({ latencyHint: "interactive" })
     if (ctx.state !== "running") await ctx.resume()
 
     const source = ctx.createMediaStreamSource(stream)
-    const output = ctx.createMediaStreamDestination()
-    output.channelCount = channel.stereo ? 2 : 1
-    output.channelCountMode = "explicit"
-    source.connect(output)
+    let output: MediaStreamAudioDestinationNode | null = null
+    if (!sendDirect(channel)) {
+        output = ctx.createMediaStreamDestination()
+        output.channelCount = channel.stereo ? 2 : 1
+        output.channelCountMode = "explicit"
+        source.connect(output)
+    }
+    // the level meter only listens
     const analyser = ctx.createAnalyser()
     analyser.fftSize = 2048
     source.connect(analyser)
@@ -171,7 +184,7 @@ async function openPipe(channel: ListenChannelConfig) {
     })
 
     pipe.producer = await transport!.produce({
-        track: output.stream.getAudioTracks()[0],
+        track: (output ? output.stream : stream).getAudioTracks()[0],
         stopTracks: false,
         // 10 ms packets and no DTX: lowest delay, steady stream
         codecOptions: { opusStereo: !!channel.stereo, opusDtx: false, opusFec: true, opusPtime: 10, opusMaxAverageBitrate: channel.stereo ? 128000 : 64000 },
@@ -230,7 +243,7 @@ setInterval(() => {
 setInterval(() => {
     if (!config.testMode || !ctx || !socket.connected) return
     for (const [channelId, pipe] of pipes) {
-        if (!pipe.producer) continue
+        if (!pipe.producer || !pipe.output) continue
         const at = ctx.currentTime + 0.1
         const osc = ctx.createOscillator()
         osc.frequency.value = 2000

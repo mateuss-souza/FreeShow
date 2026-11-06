@@ -30,7 +30,9 @@ const t = en
           headphones: "<strong>Use wired headphones</strong> if you can: Bluetooth adds delay.",
           latency: "Delay",
           latencyHint: "average {avg} ms · worst {max} ms · {n} clicks (excluding headphones)",
-          latencyWaiting: "Waiting for the test click…"
+          latencyWaiting: "Waiting for the test click…",
+          quality: "Lost audio {lost}% · jitter {jitter} ms",
+          weak: "Weak Wi-Fi signal: move closer to the router"
       }
     : {
           title: "Ouvir",
@@ -51,7 +53,9 @@ const t = en
           headphones: "<strong>Use fone com fio</strong> se puder: o Bluetooth adiciona atraso.",
           latency: "Atraso",
           latencyHint: "média {avg} ms · pior {max} ms · {n} cliques (sem contar o fone)",
-          latencyWaiting: "Aguardando o clique de teste…"
+          latencyWaiting: "Aguardando o clique de teste…",
+          quality: "Áudio perdido {lost}% · variação {jitter} ms",
+          weak: "Sinal de Wi-Fi fraco: chegue mais perto do roteador"
       }
 
 // PAGE
@@ -71,6 +75,7 @@ document.body.innerHTML = `
   <section class="stage">
     <button class="play" id="play" aria-pressed="false"></button>
     <p class="message" id="message" aria-live="polite"></p>
+    <p class="quality" id="quality"></p>
   </section>
   <section class="test" id="test" hidden>
     <span>${t.latency}</span>
@@ -95,6 +100,7 @@ const message = $("message")
 const audio = $<HTMLAudioElement>("audio")
 const keepAwakeVideo = $<HTMLVideoElement>("keepawake")
 const testEl = $("test")
+const qualityEl = $("quality")
 const latencyEl = $("latency")
 const latencyHint = $("latencyHint")
 
@@ -443,3 +449,32 @@ function registerHit(hit: number) {
 
 render()
 setState("connecting", "")
+
+// CONNECTION QUALITY: how much audio the phone had to fill in (sounds robotic) and how uneven packets arrive
+let lastStats: { concealed: number; total: number } | null = null
+setInterval(async () => {
+    if (!playing || !consumer || consumer.closed) {
+        qualityEl.textContent = ""
+        lastStats = null
+        return
+    }
+    try {
+        const report = await consumer.getStats()
+        let inbound: any = null
+        report.forEach((r: any) => {
+            if (r.type === "inbound-rtp" && r.kind === "audio") inbound = r
+        })
+        if (!inbound) return
+        const now = { concealed: Number(inbound.concealedSamples) || 0, total: Number(inbound.totalSamplesReceived) || 0 }
+        const prev = lastStats
+        lastStats = now
+        if (!prev || now.total <= prev.total) return
+        const lost = Math.max(0, Math.min(100, ((now.concealed - prev.concealed) / (now.total - prev.total)) * 100))
+        const jitter = Math.round((Number(inbound.jitter) || 0) * 1000)
+        const text = t.quality.replace("{lost}", lost < 1 ? lost.toFixed(1) : String(Math.round(lost))).replace("{jitter}", String(jitter))
+        qualityEl.textContent = lost >= 3 ? `${text} · ${t.weak}` : text
+        qualityEl.dataset.bad = String(lost >= 3)
+    } catch {
+        // stats are optional
+    }
+}, 2000)

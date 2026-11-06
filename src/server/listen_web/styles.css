@@ -161,6 +161,17 @@ h1 {
     min-height: 24px;
 }
 
+.quality {
+    margin: 0;
+    min-height: 18px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+}
+.quality[data-bad="true"] {
+    color: var(--bad);
+}
+
 .notes {
     display: flex;
     flex-direction: column;
