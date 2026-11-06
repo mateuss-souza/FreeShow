@@ -1881,5 +1881,11 @@
         "port": "Page port",
         "media_port": "Audio port (UDP/TCP)",
         "max_listeners": "Maximum listeners"
+    },
+    "update": {
+        "checking": "Checking for updates…",
+        "downloading": "Downloading update",
+        "ready": "Update ready — installs when you close FreeShow",
+        "error": "Update failed — use the releases page"
     }
 }

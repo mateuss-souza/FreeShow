@@ -1,5 +1,6 @@
 import { get } from "svelte/store"
 import { listenStatus } from "../components/listen/listenStore"
+import { updateStatus } from "../components/main/updateStore"
 import type { ContentProviderId } from "../../electron/contentProviders/base/types"
 import type { ToMainSendPayloads } from "../../types/IPC/ToMain"
 import { ToMain } from "../../types/IPC/ToMain"
@@ -239,6 +240,7 @@ export const mainResponses: MainResponses = {
     // TOP BAR
     [Main.MAXIMIZED]: (data) => windowState.set({ ...windowState, maximized: data }),
     [Main.LISTEN_STATUS]: (data) => listenStatus.set(data),
+    [Main.UPDATE_STATUS]: (data) => updateStatus.set(data),
     // MEDIA CACHE
     [ToMain.CAPTURE_CANVAS]: (data) => captureCanvas(data),
     [ToMain.LESSONS_DONE]: (data) => lessonsLoaded.set({ ...get(lessonsLoaded), [data.showId]: data.status }),

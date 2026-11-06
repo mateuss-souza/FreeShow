@@ -10,6 +10,7 @@
     import { checkTimers, startEventTimer, startTimer } from "./components/helpers/timerTick"
     import Loader from "./components/main/Loader.svelte"
     import ProgressPanel from "./components/main/ProgressPanel.svelte"
+    import UpdateStatusPanel from "./components/main/UpdateStatusPanel.svelte"
     import MenuBar from "./components/main/MenuBar.svelte"
     import Popup from "./components/main/Popup.svelte"
     import ProfileSelector from "./components/main/ProfileSelector.svelte"
@@ -88,6 +89,7 @@
             <QuickSearch />
             <Toast />
             <StatusIndicator />
+            <UpdateStatusPanel />
             <Recorder />
             <Guide />
             <ProgressPanel />

@@ -21,6 +21,7 @@ import type { StageLayouts } from "../Stage"
 import type { Event } from "./../Calendar"
 import type { History } from "./../History"
 import type { SaveData, SaveListSyncedSettings } from "./../Save"
+import type { UpdateStatus } from "./../Update"
 
 export const MAIN = "MAIN"
 
@@ -61,6 +62,8 @@ export enum Main {
     LISTEN_SET_CONFIG = "LISTEN_SET_CONFIG",
     LISTEN_DEVICES = "LISTEN_DEVICES",
     LISTEN_STATUS = "LISTEN_STATUS",
+    // APP UPDATE (download status shown in the corner)
+    UPDATE_STATUS = "UPDATE_STATUS",
     FULLSCREEN = "FULLSCREEN",
     /////
     IMPORT = "IMPORT",
@@ -352,6 +355,7 @@ export interface MainReturnPayloads {
     [Main.LISTEN_SET_CONFIG]: { config: ListenConfig; status: ListenStatus }
     [Main.LISTEN_DEVICES]: ListenStatus
     [Main.LISTEN_STATUS]: ListenStatus
+    [Main.UPDATE_STATUS]: UpdateStatus
     /////////////////////
     [Main.BIBLE]: { id: string; error?: string; content?: [string, Bible] }
     [Main.SHOW]: { id: string; error?: string; content?: [string, Show] }

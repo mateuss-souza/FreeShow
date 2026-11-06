@@ -1846,5 +1846,11 @@
         "port": "Porta da página",
         "media_port": "Porta do áudio (UDP/TCP)",
         "max_listeners": "Máximo de ouvintes"
+    },
+    "update": {
+        "checking": "Verificando atualizações…",
+        "downloading": "Baixando atualização",
+        "ready": "Atualização pronta — será instalada ao fechar o FreeShow",
+        "error": "Falha na atualização — use a página de versões"
     }
 }
