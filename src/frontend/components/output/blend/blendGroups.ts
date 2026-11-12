@@ -9,7 +9,10 @@ import { get } from "svelte/store"
 import { uid } from "uid"
 import type { BlendGroupConfig, BlendGroupMember, BlendPattern, BlendProjectorAdjust, Output, Outputs } from "../../../../types/Output"
 import { outputs, styles } from "../../../stores"
+import { OUTPUT } from "../../../../types/Channels"
+import { send } from "../../../utils/request"
 import { clone } from "../../helpers/array"
+import { toggleOutputs } from "../../helpers/output"
 import { canvasSize, DEFAULT_BLEND_GROUP, normalizeBlendGroup } from "./blendMath"
 
 export function blendGroupOf(output: Output | undefined | null): BlendGroupMember | null {
@@ -154,5 +157,46 @@ function fitCanvasStyle(styleId: string, config: BlendGroupConfig) {
         a[styleId].aspectRatio = { ...(a[styleId].aspectRatio || {}), width: size.width, height: size.height, outputResolutionAsRatio: false }
         a[styleId].name = `Edge blend ${size.width}×${size.height}`
         return a
+    })
+}
+
+// DISPLAYS (visual setup)
+
+export interface DisplayInfo {
+    id: number | string
+    label?: string
+    bounds: { x: number; y: number; width: number; height: number }
+    scaleFactor?: number
+}
+
+/** puts one projector of the group on a Windows display, and keeps the group's projector size in step */
+export function assignBlendDisplay(groupId: string, index: number, display: DisplayInfo) {
+    const all = get(outputs)
+    const member = Object.entries(all).find(([, o]) => blendGroupOf(o)?.groupId === groupId)?.[1]
+    const outputId = blendGroupOf(member)?.members[index]
+    if (!outputId || !all[outputId]) return
+
+    const bounds = { x: display.bounds.x, y: display.bounds.y, width: display.bounds.width, height: display.bounds.height }
+    outputs.update((a) => {
+        if (!a[outputId]) return a
+        a[outputId].bounds = bounds
+        a[outputId].screen = String(display.id)
+        return a
+    })
+    setTimeout(() => {
+        toggleOutputs([outputId], { state: true })
+        send(OUTPUT, ["UPDATE_BOUNDS"], { id: outputId, ...get(outputs)[outputId] })
+    }, 100)
+
+    syncBlendSize(groupId, bounds.width, bounds.height)
+}
+
+/** projector size follows the displays; overlaps keep the same share of the width */
+export function syncBlendSize(groupId: string, width: number, height: number) {
+    updateGroup(groupId, (group) => {
+        const config = group.config
+        if (config.projectorWidth === width && config.projectorHeight === height) return
+        const ratio = config.projectorWidth ? width / config.projectorWidth : 1
+        group.config = normalizeBlendGroup({ ...config, projectorWidth: width, projectorHeight: height, overlaps: config.overlaps.map((o) => Math.round(o * ratio)) })
     })
 }

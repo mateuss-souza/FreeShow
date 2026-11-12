@@ -1,8 +1,8 @@
 <script lang="ts">
     import { translateText } from "../../utils/language"
-    import type { BlendCurve, BlendPattern } from "../../../types/Output"
+    import type { BlendCurve } from "../../../types/Output"
     import { outputs } from "../../stores"
-    import { blendCandidates, blendGroupOf, createBlendGroup, removeBlendGroup, setBlendAdjust, setBlendConfig, setBlendOverlap, setBlendPattern } from "../output/blend/blendGroups"
+    import { blendCandidates, blendGroupOf, createBlendGroup, removeBlendGroup, setBlendAdjust, setBlendConfig, setBlendOverlap } from "../output/blend/blendGroups"
     import { canvasSize, normalizeBlendGroup } from "../output/blend/blendMath"
     import T from "../helpers/T.svelte"
     import InputRow from "../input/InputRow.svelte"
@@ -11,6 +11,7 @@
     import MaterialDropdown from "../inputs/MaterialDropdown.svelte"
     import MaterialNumberInput from "../inputs/MaterialNumberInput.svelte"
     import Tip from "../main/Tip.svelte"
+    import BlendVisualSetup from "./BlendVisualSetup.svelte"
 
     export let outputId: string
 
@@ -31,15 +32,6 @@
         selected = []
     }
 
-    const patternOptions: { value: BlendPattern; label: string }[] = [
-        { value: "none", label: translateText("screen.blend_pattern_none") },
-        { value: "grid", label: translateText("screen.blend_pattern_grid") },
-        { value: "white", label: translateText("screen.blend_pattern_white") },
-        { value: "gray", label: translateText("screen.blend_pattern_gray") },
-        { value: "black", label: translateText("screen.blend_pattern_black") },
-        { value: "ramp", label: translateText("screen.blend_pattern_ramp") },
-        { value: "guides", label: translateText("screen.blend_pattern_guides") }
-    ]
     const curveOptions: { value: BlendCurve; label: string }[] = [
         { value: "smoothstep", label: translateText("screen.blend_curve_smooth") },
         { value: "cosine", label: translateText("screen.blend_curve_cosine") },
@@ -64,11 +56,7 @@
         <p><T id="screen.blend_group_create" /></p>
     </MaterialButton>
 {:else}
-    <p style="opacity: 0.8; margin-bottom: 10px;">
-        <T id="screen.blend_canvas" />: {size.width} × {size.height}
-    </p>
-
-    <MaterialDropdown label="screen.blend_pattern" value={group.pattern || "none"} options={patternOptions} on:change={(e) => setBlendPattern(groupId, e.detail)} />
+    <BlendVisualSetup {group} {config} bind:projector />
 
     {#each config.overlaps as overlap, seam}
         <MaterialNumberInput label="screen.blend_overlap ({seam + 1}–{seam + 2})" value={overlap} defaultValue={Math.round(config.projectorWidth * 0.15)} max={Math.floor(config.projectorWidth / 2)} on:change={(e) => setBlendOverlap(groupId, seam, e.detail)} showSlider />
