@@ -1,4 +1,4 @@
-# Mac build of this fork for testing at home: ad-hoc signed (runs on Apple Silicon), not notarized, no in-app updates.
+# Mac build of this fork for testing at home: ad-hoc signed, Intel (runs on Apple Silicon through Rosetta), not notarized, no in-app updates.
 extends: config/building/electron-builder.yaml
 
 mac:
@@ -7,6 +7,6 @@ mac:
     target:
         - target: dmg
           arch:
-              - arm64
+              - x64
 
 publish: null

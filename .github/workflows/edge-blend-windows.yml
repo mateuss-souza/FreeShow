@@ -1,6 +1,6 @@
 name: Edge blend installers
 
-# Builds this fork for Windows (unsigned installer) and macOS (ad-hoc signed, Apple Silicon, for testing at home)
+# Builds this fork for Windows (unsigned installer) and macOS (ad-hoc signed, Intel build that also runs on Apple Silicon, for testing at home)
 # and publishes both on one GitHub pre-release. Installed Windows copies check these releases and offer the update
 # (installed when FreeShow is closed). The Mac build has no in-app updates: macOS requires an Apple-signed app.
 on:
@@ -43,7 +43,7 @@ jobs:
             - name: Create release
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: gh release create "v$FORK_VERSION" --prerelease --target "$GITHUB_SHA" --title "$FORK_VERSION" --notes "Edge blend build $FORK_VERSION. Windows installer is the x64 exe, Mac test build (Apple Silicon) is the arm64 dmg."
+              run: gh release create "v$FORK_VERSION" --prerelease --target "$GITHUB_SHA" --title "$FORK_VERSION" --notes "Edge blend build $FORK_VERSION. Windows installer is the x64 exe, Mac test build is the x64 dmg (runs on Apple Silicon through Rosetta)."
 
     windows:
         needs: release
@@ -87,7 +87,8 @@ jobs:
 
     mac:
         needs: release
-        runs-on: macos-15
+        # Intel runner: GitHub's Apple Silicon runners are often unavailable (capacity); the x64 app runs on Apple Silicon through Rosetta
+        runs-on: macos-15-intel
         steps:
             - name: Check out Git repository
               uses: actions/checkout@v5
@@ -123,7 +124,7 @@ jobs:
 
             # ad-hoc signed (required to run on Apple Silicon), not notarized: open it the first time with right-click > Open
             - name: Build disk image
-              run: npx electron-builder --mac dmg --arm64 --config config/building/electron-builder.mac-dev.yaml --publish never
+              run: npx electron-builder --mac dmg --x64 --config config/building/electron-builder.mac-dev.yaml --publish never
 
             - name: Add disk image to the release
               shell: bash
