@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { translateText } from "../../utils/language"
     import type { BlendCurve, BlendPattern } from "../../../types/Output"
     import { outputs } from "../../stores"
     import { blendCandidates, blendGroupOf, createBlendGroup, removeBlendGroup, setBlendAdjust, setBlendConfig, setBlendOverlap, setBlendPattern } from "../output/blend/blendGroups"
@@ -31,18 +32,18 @@
     }
 
     const patternOptions: { value: BlendPattern; label: string }[] = [
-        { value: "none", label: "screen.blend_pattern_none" },
-        { value: "grid", label: "screen.blend_pattern_grid" },
-        { value: "white", label: "screen.blend_pattern_white" },
-        { value: "gray", label: "screen.blend_pattern_gray" },
-        { value: "black", label: "screen.blend_pattern_black" },
-        { value: "ramp", label: "screen.blend_pattern_ramp" },
-        { value: "guides", label: "screen.blend_pattern_guides" }
+        { value: "none", label: translateText("screen.blend_pattern_none") },
+        { value: "grid", label: translateText("screen.blend_pattern_grid") },
+        { value: "white", label: translateText("screen.blend_pattern_white") },
+        { value: "gray", label: translateText("screen.blend_pattern_gray") },
+        { value: "black", label: translateText("screen.blend_pattern_black") },
+        { value: "ramp", label: translateText("screen.blend_pattern_ramp") },
+        { value: "guides", label: translateText("screen.blend_pattern_guides") }
     ]
     const curveOptions: { value: BlendCurve; label: string }[] = [
-        { value: "smoothstep", label: "screen.blend_curve_smooth" },
-        { value: "cosine", label: "screen.blend_curve_cosine" },
-        { value: "linear", label: "screen.blend_curve_linear" }
+        { value: "smoothstep", label: translateText("screen.blend_curve_smooth") },
+        { value: "cosine", label: translateText("screen.blend_curve_cosine") },
+        { value: "linear", label: translateText("screen.blend_curve_linear") }
     ]
 
     // the projector being adjusted
