@@ -183,6 +183,8 @@ async function openPipe(channel: ListenChannelConfig) {
         setTimeout(() => enqueue(applyConfig), 3000)
     })
 
+    updateKeepAlive()
+
     pipe.producer = await transport!.produce({
         track: (output ? output.stream : stream).getAudioTracks()[0],
         stopTracks: false,
@@ -202,6 +204,30 @@ function closePipe(channelId: string) {
     }
     pipe.source.disconnect()
     pipe.stream.getTracks().forEach((t) => t.stop())
+    updateKeepAlive()
+}
+
+// Windows only delivers system audio while something is playing: with nothing playing the capture
+// starves and listeners hear a rhythmic noise. An inaudible signal (about -80 dB) played to the default
+// output keeps the system mix flowing, the same trick other capture software uses.
+let keepAlive: AudioBufferSourceNode | null = null
+function updateKeepAlive() {
+    const needed = [...pipes.values()].some((p) => p.key.startsWith("loopback|"))
+    if (needed && !keepAlive && ctx) {
+        const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate)
+        const data = buffer.getChannelData(0)
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 1e-4
+        const node = ctx.createBufferSource()
+        node.buffer = buffer
+        node.loop = true
+        node.connect(ctx.destination)
+        node.start()
+        keepAlive = node
+    } else if (!needed && keepAlive) {
+        keepAlive.stop()
+        keepAlive.disconnect()
+        keepAlive = null
+    }
 }
 
 function closeAll() {
