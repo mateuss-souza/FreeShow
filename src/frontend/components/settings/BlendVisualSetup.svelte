@@ -68,7 +68,7 @@
     $: scaled = memberIds.map((_, i) => displayOf(i)).filter((d) => d && (d.scaleFactor || 1) !== 1) as DisplayInfo[]
     // the group's projector size doesn't match its displays (e.g. after changing Windows scale)
     $: firstDisplay = displayOf(0)
-    $: sizeMismatch = !!firstDisplay && (firstDisplay.bounds.width !== config.projectorWidth || firstDisplay.bounds.height !== config.projectorHeight)
+    $: sizeMismatch = !!firstDisplay && (firstDisplay.bounds.width !== (config.displayWidth || config.projectorWidth) || firstDisplay.bounds.height !== (config.displayHeight || config.projectorHeight))
 
     // BLENDED IMAGE
 

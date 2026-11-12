@@ -80,7 +80,14 @@
         "blend_size_mismatch": "O tamanho do projetor não bate com a tela:",
         "blend_use_display_size": "Usar tamanho da tela",
         "blend_strip_tip": "Clique em um projetor para ajustá-lo. Arraste as alças laranja para mudar a sobreposição.",
-        "blend_no_display": "sem tela"
+        "blend_no_display": "sem tela",
+        "blend_area_tip": "Área usada (como o Destino de saída personalizado do ProPresenter): a parte da tela de cada projetor que mostra a imagem. O resto fica preto.",
+        "blend_area_width": "Largura usada",
+        "blend_area_height": "Altura usada",
+        "blend_display_width": "Largura da tela",
+        "blend_display_height": "Altura da tela",
+        "blend_area_x": "X da área usada",
+        "blend_area_y": "Y da área usada"
     },
     "about": {
         "check_updates": "Verificar por atualizações",

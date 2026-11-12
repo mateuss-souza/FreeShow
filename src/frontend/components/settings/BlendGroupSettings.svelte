@@ -75,15 +75,32 @@
         <MaterialNumberInput label="screen.blend_offset_x (px)" value={adjust.offsetX || 0} defaultValue={0} min={-500} max={500} on:change={(e) => setBlendAdjust(groupId, projector, { offsetX: e.detail })} />
         <MaterialNumberInput label="screen.blend_offset_y (px)" value={adjust.offsetY || 0} defaultValue={0} min={-500} max={500} on:change={(e) => setBlendAdjust(groupId, projector, { offsetY: e.detail })} />
     </InputRow>
+    <InputRow>
+        <MaterialNumberInput label="screen.blend_area_x (px)" value={adjust.areaX || 0} defaultValue={0} min={0} max={(config.displayWidth || config.projectorWidth) - config.projectorWidth} on:change={(e) => setBlendAdjust(groupId, projector, { areaX: e.detail })} />
+        <MaterialNumberInput label="screen.blend_area_y (px)" value={adjust.areaY || 0} defaultValue={0} min={0} max={(config.displayHeight || config.projectorHeight) - config.projectorHeight} on:change={(e) => setBlendAdjust(groupId, projector, { areaY: e.detail })} />
+    </InputRow>
 
     <br />
 
+    <p class="sectionTip"><T id="screen.blend_area_tip" /></p>
     <InputRow>
-        <MaterialNumberInput label="screen.width (px)" value={config.projectorWidth} min={320} max={8192} on:change={(e) => setBlendConfig(groupId, { projectorWidth: e.detail })} />
-        <MaterialNumberInput label="screen.height (px)" value={config.projectorHeight} min={240} max={8192} on:change={(e) => setBlendConfig(groupId, { projectorHeight: e.detail })} />
+        <MaterialNumberInput label="screen.blend_area_width (px)" value={config.projectorWidth} min={320} max={config.displayWidth || 8192} on:change={(e) => setBlendConfig(groupId, { projectorWidth: e.detail })} />
+        <MaterialNumberInput label="screen.blend_area_height (px)" value={config.projectorHeight} min={240} max={config.displayHeight || 8192} on:change={(e) => setBlendConfig(groupId, { projectorHeight: e.detail })} />
+    </InputRow>
+    <InputRow>
+        <MaterialNumberInput label="screen.blend_display_width (px)" value={config.displayWidth || config.projectorWidth} min={320} max={8192} on:change={(e) => setBlendConfig(groupId, { displayWidth: e.detail })} />
+        <MaterialNumberInput label="screen.blend_display_height (px)" value={config.displayHeight || config.projectorHeight} min={240} max={8192} on:change={(e) => setBlendConfig(groupId, { displayHeight: e.detail })} />
     </InputRow>
 
     <MaterialButton variant="outlined" style="width: 100%; margin-top: 10px;" icon="delete" red on:click={() => removeBlendGroup(groupId)}>
         <p><T id="screen.blend_group_remove" /></p>
     </MaterialButton>
 {/if}
+
+<style>
+    .sectionTip {
+        font-size: 0.85em;
+        opacity: 0.8;
+        margin: 4px 0;
+    }
+</style>

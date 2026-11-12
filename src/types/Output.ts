@@ -110,14 +110,20 @@ export interface BlendProjectorAdjust {
     offsetY?: number
     /** light multiplier to match a brighter projector to a dimmer one (0.3..1) */
     brightness?: number
+    /** where the used area starts on this projector's display, in display px (ProPresenter's custom output destination) */
+    areaX?: number
+    areaY?: number
 }
 
 export interface BlendGroupConfig {
     /** number of projectors side by side (2..8) */
     projectors: number
-    /** pixel size of one projector output */
+    /** pixel size of the area each projector uses (its slice of the canvas); the whole display unless set smaller */
     projectorWidth: number
     projectorHeight: number
+    /** full pixel size of each projector's display, when the used area is smaller (the rest stays black) */
+    displayWidth?: number
+    displayHeight?: number
     /** overlap in px between projector i and i+1 (length projectors - 1) */
     overlaps: number[]
     /** projector gamma, usually 2.2 */

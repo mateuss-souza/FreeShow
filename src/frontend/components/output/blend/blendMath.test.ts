@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { BLEND_CURVES, blackLift, blendPixel, canvasSize, getSlices, normalizeBlendGroup, ramp, signalMask, simulateScreenLight } from "./blendMath"
+import { BLEND_CURVES, blackLift, blendPixel, canvasSize, getSlices, normalizeBlendGroup, ramp, signalMask, simulateScreenLight, usedArea } from "./blendMath"
 
 const three = normalizeBlendGroup({ projectors: 3, projectorWidth: 1920, projectorHeight: 1080, overlaps: [300, 300] })
 
@@ -82,5 +82,32 @@ describe("black level", () => {
         const [, b] = getSlices(cfg)
         expect(blendPixel(0.5, b, 960, cfg)).toBe(0.5)
         expect(blendPixel(0, b, 960, cfg)).toBeCloseTo(0.1, 10)
+    })
+})
+
+describe("used area (ProPresenter's custom output destination)", () => {
+    // the church's ProPresenter setup: three 1920x1080 projectors, each using 1779 px, 200 px blends
+    const cfg = normalizeBlendGroup({ projectors: 3, projectorWidth: 1779, projectorHeight: 1080, displayWidth: 1920, displayHeight: 1080, overlaps: [200, 200], curve: "linear", gamma: 1 })
+
+    it("gives the same blended image size as ProPresenter", () => {
+        expect(canvasSize(cfg)).toEqual({ width: 4937, height: 1080 })
+    })
+
+    it("places the used area in the window and leaves the rest black", () => {
+        const area = usedArea(cfg, 1)
+        expect(area.left).toBe(0)
+        expect(area.top).toBe(0)
+        expect(area.width).toBeCloseTo(1779 / 1920)
+        expect(area.height).toBe(1)
+        const moved = usedArea(normalizeBlendGroup({ ...cfg, adjust: [{}, { areaX: 141 }] }), 1)
+        expect(moved.left).toBeCloseTo(141 / 1920)
+        // never outside the display
+        expect(usedArea(normalizeBlendGroup({ ...cfg, adjust: [{ areaX: 999 }] }), 0).left).toBeCloseTo(141 / 1920)
+    })
+
+    it("without a used area the whole display is used", () => {
+        const full = normalizeBlendGroup({ projectorWidth: 1920, projectorHeight: 1080 })
+        expect(full.displayWidth).toBe(1920)
+        expect(usedArea(full, 0)).toEqual({ left: 0, top: 0, width: 1, height: 1 })
     })
 })

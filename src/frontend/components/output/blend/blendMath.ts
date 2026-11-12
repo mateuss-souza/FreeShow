@@ -59,10 +59,16 @@ export function normalizeBlendGroup(input: Partial<BlendGroupConfig> | undefined
         overlaps.push(clamp(Math.round(raw) || 0, 0, maxOverlap))
     }
 
+    // the display is at least the used area
+    const displayWidth = Math.max(projectorWidth, Math.round(Number(cfg.displayWidth) || projectorWidth))
+    const displayHeight = Math.max(projectorHeight, Math.round(Number(cfg.displayHeight) || projectorHeight))
+
     return {
         projectors,
         projectorWidth,
         projectorHeight,
+        displayWidth,
+        displayHeight,
         overlaps,
         gamma: clamp(Number(cfg.gamma) || 2.2, 1, 3),
         curve: BLEND_CURVES.includes(cfg.curve) ? cfg.curve : "smoothstep",
@@ -182,3 +188,13 @@ export function maskRows(cfg: BlendGroupConfig, index: number) {
 /** numeric ids shared with the shader */
 export const PATTERN_IDS: Record<BlendPattern, number> = { none: 0, grid: 1, white: 2, gray: 3, black: 4, ramp: 5, guides: 6 }
 export const CURVE_IDS: Record<BlendCurve, number> = { linear: 0, smoothstep: 1, cosine: 2 }
+
+/** where a projector's used area sits in its window, as fractions of the window (all of it unless an area is set) */
+export function usedArea(cfg: BlendGroupConfig, index: number) {
+    const displayWidth = cfg.displayWidth || cfg.projectorWidth
+    const displayHeight = cfg.displayHeight || cfg.projectorHeight
+    const adjust = cfg.adjust?.[index] || {}
+    const x = clamp(Number(adjust.areaX) || 0, 0, displayWidth - cfg.projectorWidth)
+    const y = clamp(Number(adjust.areaY) || 0, 0, displayHeight - cfg.projectorHeight)
+    return { left: x / displayWidth, top: y / displayHeight, width: cfg.projectorWidth / displayWidth, height: cfg.projectorHeight / displayHeight }
+}

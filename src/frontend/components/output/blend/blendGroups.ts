@@ -92,7 +92,10 @@ export function removeBlendGroup(groupId: string) {
 
 export function setBlendConfig(groupId: string, change: Partial<BlendGroupConfig>) {
     updateGroup(groupId, (group) => {
-        group.config = normalizeBlendGroup({ ...group.config, ...change })
+        const c = group.config
+        // groups made before the used area existed: the display is what the projector size was
+        const display = { displayWidth: c.displayWidth || c.projectorWidth, displayHeight: c.displayHeight || c.projectorHeight }
+        group.config = normalizeBlendGroup({ ...c, ...display, ...change })
     })
 }
 
@@ -191,12 +194,23 @@ export function assignBlendDisplay(groupId: string, index: number, display: Disp
     syncBlendSize(groupId, bounds.width, bounds.height)
 }
 
-/** projector size follows the displays; overlaps keep the same share of the width */
+/** the group's display size follows the real displays; the used area and overlaps keep their share of it */
 export function syncBlendSize(groupId: string, width: number, height: number) {
     updateGroup(groupId, (group) => {
         const config = group.config
-        if (config.projectorWidth === width && config.projectorHeight === height) return
-        const ratio = config.projectorWidth ? width / config.projectorWidth : 1
-        group.config = normalizeBlendGroup({ ...config, projectorWidth: width, projectorHeight: height, overlaps: config.overlaps.map((o) => Math.round(o * ratio)) })
+        const oldWidth = config.displayWidth || config.projectorWidth
+        const oldHeight = config.displayHeight || config.projectorHeight
+        if (oldWidth === width && oldHeight === height) return
+        const rx = oldWidth ? width / oldWidth : 1
+        const ry = oldHeight ? height / oldHeight : 1
+        group.config = normalizeBlendGroup({
+            ...config,
+            displayWidth: width,
+            displayHeight: height,
+            projectorWidth: Math.round(config.projectorWidth * rx),
+            projectorHeight: Math.round(config.projectorHeight * ry),
+            overlaps: config.overlaps.map((o) => Math.round(o * rx)),
+            adjust: (config.adjust || []).map((a) => ({ ...a, areaX: Math.round((a?.areaX || 0) * rx), areaY: Math.round((a?.areaY || 0) * ry) }))
+        })
     })
 }

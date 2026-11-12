@@ -5,7 +5,7 @@
     import type { BlendGroupMember } from "../../../../types/Output"
     import Output from "../Output.svelte"
     import { getStyleResolution } from "../../slide/getStyleResolution"
-    import { canvasSize, maskRows, normalizeBlendGroup } from "./blendMath"
+    import { canvasSize, maskRows, normalizeBlendGroup, usedArea } from "./blendMath"
     import { BlendRenderer } from "./blendShader"
 
     export let outputId: string
@@ -19,6 +19,9 @@
     $: canvas = canvasSize(config)
     $: rows = maskRows(config, index)
     $: slice = rows.slice
+    // the used area inside the window (ProPresenter's custom destination); outside it stays black
+    $: area = usedArea(config, index)
+    $: areaStyle = `left: ${area.left * 100}%; top: ${area.top * 100}%; width: ${area.width * 100}%; height: ${area.height * 100}%;`
 
     // the window may not be exactly the projector's pixel size (display scaling): stretch the slice to fill it
     $: scaleX = width ? width / slice.width : 1
@@ -62,19 +65,21 @@
     onDestroy(() => renderer.destroy())
 </script>
 
-<div class="blendWindow" bind:offsetWidth={width} bind:offsetHeight={height}>
-    {#if pattern}
-        <canvas class="pattern" bind:this={patternCanvas}></canvas>
-    {:else}
-        <div class="masked" style="-webkit-mask-image: url({maskUrl}); mask-image: url({maskUrl});">
-            <div class="canvas" style={contentStyle}>
-                <Output {outputId} style={getStyleResolution(canvas, canvas.width, canvas.height, "fit")} />
+<div class="blendWindow">
+    <div class="area" style={areaStyle} bind:offsetWidth={width} bind:offsetHeight={height}>
+        {#if pattern}
+            <canvas class="pattern" bind:this={patternCanvas}></canvas>
+        {:else}
+            <div class="masked" style="-webkit-mask-image: url({maskUrl}); mask-image: url({maskUrl});">
+                <div class="canvas" style={contentStyle}>
+                    <Output {outputId} style={getStyleResolution(canvas, canvas.width, canvas.height, "fit")} />
+                </div>
             </div>
-        </div>
-        {#if liftUrl}
-            <div class="lift" style="background-image: url({liftUrl});"></div>
+            {#if liftUrl}
+                <div class="lift" style="background-image: url({liftUrl});"></div>
+            {/if}
         {/if}
-    {/if}
+    </div>
 </div>
 
 <style>
@@ -85,6 +90,12 @@
         height: 100%;
         overflow: hidden;
         background-color: black;
+    }
+
+    .area {
+        position: absolute;
+        overflow: hidden;
+        isolation: isolate;
     }
 
     .masked {
