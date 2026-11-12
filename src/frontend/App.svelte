@@ -11,6 +11,7 @@
     import Loader from "./components/main/Loader.svelte"
     import ProgressPanel from "./components/main/ProgressPanel.svelte"
     import UpdateStatusPanel from "./components/main/UpdateStatusPanel.svelte"
+    import PlaybackSyncPlayer from "./components/playback/PlaybackSyncPlayer.svelte"
     import MenuBar from "./components/main/MenuBar.svelte"
     import Popup from "./components/main/Popup.svelte"
     import ProfileSelector from "./components/main/ProfileSelector.svelte"
@@ -90,6 +91,7 @@
             <Toast />
             <StatusIndicator />
             <UpdateStatusPanel />
+            <PlaybackSyncPlayer />
             <Recorder />
             <Guide />
             <ProgressPanel />

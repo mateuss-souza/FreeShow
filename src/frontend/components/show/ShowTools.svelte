@@ -6,11 +6,13 @@
     import Media from "./tools/Media.svelte"
     import Metadata from "./tools/Metadata.svelte"
     import SlideGroups from "./tools/SlideGroups.svelte"
+    import PlaybackSyncPanel from "../playback/PlaybackSyncPanel.svelte"
 
     const tabs: TabsObj = {
         groups: { name: "tools.groups", icon: "groups" },
         metadata: { name: "tools.metadata", icon: "info" },
-        media: { name: "tools.media", icon: "media", remove: true }
+        media: { name: "tools.media", icon: "media", remove: true },
+        playback: { name: "playback_sync.tab", icon: "youtube" }
     }
     let active: string = Object.keys(tabs)[0]
 
@@ -57,6 +59,10 @@
             {:else if active === "metadata"}
                 <div class="content">
                     <Metadata />
+                </div>
+            {:else if active === "playback"}
+                <div class="content">
+                    <PlaybackSyncPanel />
                 </div>
             {/if}
         {/if}

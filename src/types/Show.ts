@@ -2,6 +2,7 @@ import type { AutosizeTypes } from "../frontend/components/edit/scripts/autosize
 import type { Input } from "./Input"
 import type { Animation } from "./Output"
 import type { Cropping, Resolution } from "./Settings"
+import type { PlaybackSync } from "./PlaybackSync"
 
 export interface Shows {
     [key: string]: Show
@@ -23,6 +24,8 @@ export interface Show {
     locked?: boolean // disable edits
     category: null | ID
     quickAccess?: any
+    /** slide changes recorded against playback videos (one per video version) */
+    playbackSyncs?: { [key: string]: PlaybackSync }
     reference?: {
         type: "calendar" | "scripture" | "lessons" | "canva" | "interaction"
         data: any
