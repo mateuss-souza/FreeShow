@@ -6,6 +6,8 @@ const { notarize } = require("@electron/notarize")
 exports.default = async function notarizing(context) {
     const { electronPlatformName, appOutDir } = context
     if (electronPlatformName !== "darwin") return
+    // builds without an Apple Developer account (this fork's test builds) are not notarized
+    if (!process.env.APPLE_ID) return console.log("Skipping notarization: no APPLE_ID")
 
     const appName = context.packager.appInfo.productFilename
 

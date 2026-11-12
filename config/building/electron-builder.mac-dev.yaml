@@ -1,0 +1,12 @@
+# Mac build of this fork for testing at home: ad-hoc signed (runs on Apple Silicon), not notarized, no in-app updates.
+extends: config/building/electron-builder.yaml
+
+mac:
+    # "-" = ad-hoc signature; the entitlements already allow unsigned native modules (disable-library-validation)
+    identity: "-"
+    target:
+        - target: dmg
+          arch:
+              - arm64
+
+publish: null
