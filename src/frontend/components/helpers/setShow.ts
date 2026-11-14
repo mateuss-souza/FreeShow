@@ -10,6 +10,8 @@ import { invalidateSearchIndex } from "../../utils/searchFast"
 import { Main } from "./../../../types/IPC/Main"
 import { getFileName } from "./media"
 import { getShowCacheId, updateCachedShow } from "./show"
+import { getShowMetaEntry } from "../../../types/ShowMetaCache"
+import { showMetaCache } from "../redesign/search/metaStore"
 
 export async function setShow(id: string, value: "delete" | Show): Promise<Show> {
     let previousValue: Show
@@ -256,6 +258,8 @@ export function saveTextCache(id: string, show: Show) {
 
     const txt = getTextCacheString(show)
     tempCache[id] = txt
+    // song credits for search (fork)
+    showMetaCache.update((a) => ({ ...a, [id]: getShowMetaEntry(show) }))
 
     // prevent rapid updates
     if (updateTimeout) clearTimeout(updateTimeout)

@@ -12,6 +12,7 @@
     import ProgressPanel from "./components/main/ProgressPanel.svelte"
     import UpdateStatusPanel from "./components/main/UpdateStatusPanel.svelte"
     import PlaybackSyncPlayer from "./components/playback/PlaybackSyncPlayer.svelte"
+    import SearchPalette from "./components/redesign/search/SearchPalette.svelte"
     import MenuBar from "./components/main/MenuBar.svelte"
     import Popup from "./components/main/Popup.svelte"
     import ProfileSelector from "./components/main/ProfileSelector.svelte"
@@ -92,6 +93,7 @@
             <StatusIndicator />
             <UpdateStatusPanel />
             <PlaybackSyncPlayer />
+            <SearchPalette />
             <Recorder />
             <Guide />
             <ProgressPanel />

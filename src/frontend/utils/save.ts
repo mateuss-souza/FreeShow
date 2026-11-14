@@ -9,6 +9,7 @@ import { stopAllInteractions } from "../components/drawer/pages/interactions"
 import { clone, keysToID, removeDeleted } from "../components/helpers/array"
 import { isOutCleared, updateSyncedOutputs } from "../components/helpers/output"
 import { sendMain } from "../IPC/main"
+import { showMetaCache } from "../components/redesign/search/metaStore"
 import {
     actionTags,
     actions,
@@ -233,7 +234,7 @@ export function save(closeWhenFinished = false, customTriggers: SaveActions = {}
         deletedShows: get(deletedShows),
         renamedShows: get(renamedShows),
         // CACHES
-        CACHE: { text: get(textCache) },
+        CACHE: { text: get(textCache), meta: get(showMetaCache) },
         HISTORY: { undo: get(undoHistory), redo: get(redoHistory) },
         USAGE: get(usageLog),
         // SAVE INFO DATA

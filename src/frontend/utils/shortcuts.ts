@@ -31,13 +31,15 @@ import { triggerPopupSubmit } from "./popup"
 import { send } from "./request"
 import { save } from "./save"
 import { isTypingTarget } from "./shortcutsHelper"
+import { searchPaletteOpen } from "../components/redesign/search/searchActions"
 
 const menus: TopViews[] = ["show", "edit", "stage", "draw", "settings"]
 
 const ctrlKeys = {
     a: () => selectAll(),
     c: () => copy(),
-    f: () => (shouldOpenReplace() ? activePopup.set("find_replace") : null),
+    // new interface (fork redesign): Ctrl+F opens Search, except find and replace while editing
+    f: () => (shouldOpenReplace() ? activePopup.set("find_replace") : get(special).interface === "new" ? searchPaletteOpen.set(true) : null),
     v: () => paste(),
     // give time for drawer to not toggle
     d: () => setTimeout(() => duplicate(get(selected))),

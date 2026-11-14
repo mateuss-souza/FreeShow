@@ -20,6 +20,7 @@ import { createThumbnail, doesMediaExist, filePathHashCode } from "../data/thumb
 import { sendMain, sendToMain } from "../IPC/main"
 import { mainWindow, setAutoProfile } from "./../index"
 import { getAllShows, trimShow } from "./shows"
+import { getShowMetaEntry, type ShowMetaCache } from "../../types/ShowMetaCache"
 
 function actionComplete(err: Error | null, actionFailedMessage: string) {
     if (err) console.error(actionFailedMessage + ":", err)
@@ -1185,6 +1186,9 @@ export function loadShows(returnShows = false, reCacheNames: string[] = []) {
     const newCachedShows: TrimmedShows = {}
     const textCache: { [key: string]: string } = {}
     const existingCacheText: { [key: string]: string } = getStore("CACHE")?.text || {}
+    // song credits for search (fork): every show gets an entry, read once
+    const metaCache: ShowMetaCache = {}
+    const existingCacheMeta: ShowMetaCache = getStore("CACHE")?.meta || {}
 
     // create a map for quick lookup of cached shows by name
     const cachedShowNames = new Map<string, string>()
@@ -1203,10 +1207,11 @@ export function loadShows(returnShows = false, reCacheNames: string[] = []) {
         if (matchingShowId && !newCachedShows[matchingShowId]) {
             newCachedShows[matchingShowId] = cachedShows[matchingShowId]
             // backfill: build text for an already-cached show that was never text-cached (e.g. it existed before the text cache)
-            if (!existingCacheText[matchingShowId]) {
+            if (!existingCacheText[matchingShowId] || !existingCacheMeta[matchingShowId]) {
                 const cachedShowData = parseShow(readFile(path.join(showsPath, `${name}.show`)) || "{}")
-                const cachedTxt = cachedShowData?.[1] ? getTextCacheString(cachedShowData[1]) : ""
+                const cachedTxt = cachedShowData?.[1] && !existingCacheText[matchingShowId] ? getTextCacheString(cachedShowData[1]) : ""
                 if (cachedTxt) textCache[matchingShowId] = cachedTxt
+                if (cachedShowData?.[1]) metaCache[matchingShowId] = getShowMetaEntry(cachedShowData[1])
             }
             return
         }
@@ -1230,12 +1235,14 @@ export function loadShows(returnShows = false, reCacheNames: string[] = []) {
         // cache text content
         const txt = getTextCacheString(show[1])
         if (txt) textCache[id] = txt
+        metaCache[id] = getShowMetaEntry(show[1])
     }
 
     // send updated text cache
-    if (Object.keys(textCache).length) {
+    if (Object.keys(textCache).length || Object.keys(metaCache).length) {
         const cache = getStore("CACHE")
         cache.text = { ...cache.text, ...textCache }
+        cache.meta = { ...(cache.meta || {}), ...metaCache }
         sendMain(Main.CACHE, cache)
     }
 
@@ -1261,6 +1268,9 @@ export async function loadShowsAsync(returnShows = false, reCacheNames: string[]
     const newCachedShows: TrimmedShows = {}
     const textCache: { [key: string]: string } = {}
     const existingCacheText: { [key: string]: string } = getStore("CACHE")?.text || {}
+    // song credits for search (fork): every show gets an entry, read once
+    const metaCache: ShowMetaCache = {}
+    const existingCacheMeta: ShowMetaCache = getStore("CACHE")?.meta || {}
 
     // send already cached shows to the frontend immediately
     if (!returnShows && !reCacheNames.length && Object.keys(cachedShows).length) {
@@ -1283,11 +1293,12 @@ export async function loadShowsAsync(returnShows = false, reCacheNames: string[]
             if (matchingShowId && !newCachedShows[matchingShowId]) {
                 newCachedShows[matchingShowId] = cachedShows[matchingShowId]
                 // backfill: build text for an already-cached show that was never text-cached
-                if (!existingCacheText[matchingShowId]) {
+                if (!existingCacheText[matchingShowId] || !existingCacheMeta[matchingShowId]) {
                     hadIo = true
                     const cachedShowData = parseShow((await readFileAsync(path.join(showsPath, `${name}.show`))) || "{}")
-                    const cachedTxt = cachedShowData?.[1] ? getTextCacheString(cachedShowData[1]) : ""
+                    const cachedTxt = cachedShowData?.[1] && !existingCacheText[matchingShowId] ? getTextCacheString(cachedShowData[1]) : ""
                     if (cachedTxt) textCache[matchingShowId] = cachedTxt
+                    if (cachedShowData?.[1]) metaCache[matchingShowId] = getShowMetaEntry(cachedShowData[1])
                 }
                 return
             }
@@ -1312,15 +1323,17 @@ export async function loadShowsAsync(returnShows = false, reCacheNames: string[]
             // cache text content
             const txt = getTextCacheString(show[1])
             if (txt) textCache[id] = txt
+            metaCache[id] = getShowMetaEntry(show[1])
         })
 
         if (hadIo) await new Promise((resolve) => setImmediate(resolve))
     }
 
     // send updated text cache
-    if (Object.keys(textCache).length) {
+    if (Object.keys(textCache).length || Object.keys(metaCache).length) {
         const cache = getStore("CACHE")
         cache.text = { ...cache.text, ...textCache }
+        cache.meta = { ...(cache.meta || {}), ...metaCache }
         sendMain(Main.CACHE, cache)
     }
 

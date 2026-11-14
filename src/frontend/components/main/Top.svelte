@@ -10,6 +10,8 @@
     import T from "../helpers/T.svelte"
     import Button from "../inputs/Button.svelte"
     import TopButton from "../inputs/TopButton.svelte"
+    import { newInterface } from "../redesign/interface"
+    import SearchButton from "../redesign/search/SearchButton.svelte"
 
     export let isWindows = false
 
@@ -113,6 +115,9 @@
         <TopButton id="stage" />
     </span>
     <span style="width: var(--navigation-width);justify-content: flex-end;">
+        {#if $newInterface}
+            <SearchButton />
+        {/if}
         <TopButton id="draw" red={$drawTool === "fill" || ($drawTool === "zoom" && $drawSettings.zoom?.size !== 100) || !!($drawTool === "paint" && $paintCache?.length)} hideLabel />
         {#if !settingsDisabled}
             <TopButton id="settings" hideLabel />

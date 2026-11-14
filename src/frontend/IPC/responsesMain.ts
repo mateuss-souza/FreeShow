@@ -1,6 +1,7 @@
 import { get } from "svelte/store"
 import { listenStatus } from "../components/listen/listenStore"
 import { updateStatus } from "../components/main/updateStore"
+import { showMetaCache } from "../components/redesign/search/metaStore"
 import type { ContentProviderId } from "../../electron/contentProviders/base/types"
 import type { ToMainSendPayloads } from "../../types/IPC/ToMain"
 import { ToMain } from "../../types/IPC/ToMain"
@@ -154,6 +155,7 @@ export const mainResponses: MainResponses = {
     },
     [Main.CACHE]: (a) => {
         textCache.set(a.text || {})
+        showMetaCache.set(a.meta || {})
         invalidateSearchIndex()
     },
     [Main.USAGE]: (a) => usageLog.set(a),

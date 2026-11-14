@@ -40,6 +40,8 @@
 </script>
 
 <MaterialDropdown label="settings.language" value={$language} options={getLanguageList()} on:change={(e) => setLanguage(e.detail)} flags />
+<!-- fork redesign: Classic is upstream FreeShow -->
+<MaterialDropdown label="redesign.interface" value={$special.interface || "classic"} options={[{ value: "classic", label: translateText("redesign.interface_classic") }, { value: "new", label: translateText("redesign.interface_new") }]} on:change={(e) => updateSpecial(e.detail === "new" ? "new" : "", "interface")} />
 <MaterialToggleSwitch label="settings.use24hClock" checked={$timeFormat === "24"} on:change={(e) => timeFormat.set(e.detail ? "24" : "12")} />
 <MaterialToggleSwitch label="settings.disable_labels" checked={$labelsDisabled} defaultValue={false} on:change={(e) => labelsDisabled.set(e.detail)} />
 <MaterialToggleSwitch label="settings.full_colors" checked={$fullColors} defaultValue={false} on:change={(e) => fullColors.set(e.detail)} />

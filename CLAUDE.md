@@ -46,9 +46,16 @@ The band plays along to a YouTube video (audio only); lyrics come from FreeShow 
 ### Windows title bar
 Manual window drag (`Main.WINDOW_DRAG`, `src/frontend/components/main/MenuBar.svelte`, `dragMainWindow` in `src/electron/index.ts`) because `-webkit-app-region: drag` swallowed clicks on the menu and window buttons.
 
+### Redesign (ProPresenter-style), behind "Interface: Classic / New"
+Mockups: Claude design canvas "FreeShow redesign" (Live mode, Search, Prepare mode with a services and events tree).
+- Rules: new components only, in `src/frontend/components/redesign/`; upstream files get small hooks (a mount, an import, a store). Setting `special.interface` ("new" or unset = Classic, default) in Settings › General; `newInterface` store in `redesign/interface.ts`. FreeShow theme variables, not the mockup hex colors.
+- Order: 1) Search (done), 2) services and events tree in Prepare, 3) Live mode (riskiest: it runs the service), 4) Prepare assistant on upstream's `src/frontend/ai/`. The mockup's "Following audio" strip is the playback recording (`playbackSync.ts`), to be renamed "Following playback".
+- Search: `redesign/search/` — `SearchPalette.svelte` (Ctrl+F in New, except find/replace while editing; magnifying glass `SearchButton.svelte` in `Top.svelte`), `searchModel.ts` (pure, tested in `searchModel.test.ts`: titles, lyrics phrase from `textCache`, artists/bands from credits), `searchActions.ts` (add to the open project, show now via `startShow`, open at the slide holding the lyrics).
+- Credits index: the main process caches artist, author, composer and key of every show in the `CACHE` store as `meta` (`src/types/ShowMetaCache.ts`, hooks in `src/electron/utils/files.ts` loadShows/loadShowsAsync, read once per show); frontend store `redesign/search/metaStore.ts`, saved with the cache in `utils/save.ts`, updated on show save in `helpers/setShow.ts`.
+
 ## Build, test, release
 
-- Tests: `npx vitest run --config config/testing/vitest.config.ts src/frontend/components/output/blend src/frontend/components/playback`
+- Tests: `npx vitest run --config config/testing/vitest.config.ts src/frontend/components/output/blend src/frontend/components/playback src/frontend/components/redesign`
 - Type check: `npx svelte-check --threshold error` (needs `NODE_OPTIONS=--max-old-space-size=6144`; ~200 errors are pre-existing upstream, check only new files) and `npx tsc --noEmit -p config/typescript/tsconfig.electron.json`.
 - Full build: `npm run build`. Listen test pages only: `npm run build:servers:prod`.
 - CI: `.github/workflows/edge-blend-windows.yml` runs on every push to `feature/edge-blend-group`: a `release` job creates the pre-release `vX.Y.Z-blend.<run>` first (avoids duplicate releases from parallel uploads), then `windows` (unsigned NSIS `.exe`, publishes `blend.yml` for auto-update) and `mac` (ad-hoc signed `.dmg`, `config/building/electron-builder.mac-dev.yaml`, no notarization, no in-app updates) build in parallel. The Mac job uses `macos-15-intel` because Apple Silicon runners repeatedly had no capacity.
@@ -61,4 +68,5 @@ Manual window drag (`Main.WINDOW_DRAG`, `src/frontend/components/main/MenuBar.sv
 - On-site tests: blend with the three projectors (grid, white, gray, black), Listen latency and sound quality on several phones, playback recording on the Mac and at church.
 - 5 ESLint errors in the Listen files (the ESLint tsconfig doesn't include them).
 - Fork default branch for the weekly sync.
-- ProPresenter-style layout: mockups live in a Claude design canvas ("FreeShow redesign": Live mode, Search, Prepare mode with a services and events folder tree). FreeShow already has projects, project folders and project templates; the redesign surfaces them. Search should also cover artist, author and composer (FreeShow only searches title, lyrics, number and CCLI today).
+- Redesign steps 2–4 (see above). FreeShow already has projects, project folders and project templates; step 2 surfaces them.
+- Blend: used area per projector reproduces the church's ProPresenter setup (3 × 1920 displays, 1779 used, 200 px linear blends = 4937 × 1080); not yet confirmed on the wall. Listen: a rhythmic beep on phones with "Áudio do computador"; suspected another Windows output (headphones) or a program beeping; waiting for the Volume Mixer photo.
