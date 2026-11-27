@@ -88,7 +88,8 @@
         "blend_display_width": "Display width",
         "blend_display_height": "Display height",
         "blend_area_x": "Used area X",
-        "blend_area_y": "Used area Y"
+        "blend_area_y": "Used area Y",
+        "blend_auto_assign": "Put the projectors in order (left to right)"
     },
     "about": {
         "check_updates": "Look for updates",

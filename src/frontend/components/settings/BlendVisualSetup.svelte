@@ -50,11 +50,27 @@
     })()
     const physical = (d: DisplayInfo) => `${Math.round(d.bounds.width * (d.scaleFactor || 1))} × ${Math.round(d.bounds.height * (d.scaleFactor || 1))}`
 
+    // clicking the displays always starts at projector 1 (the field below may have another one selected)
+    let clickIndex = 0
     function pickDisplay(display: DisplayInfo) {
-        assignBlendDisplay(group.groupId, projector, display)
-        // next click goes to the next projector, so 1-2-3 is three clicks
-        if (projector < memberIds.length - 1) projector++
+        const index = Math.min(clickIndex, memberIds.length - 1)
+        assignBlendDisplay(group.groupId, index, display)
+        projector = index
+        // next click goes to the next projector, so 1-2-3 is three clicks; then it starts over
+        clickIndex = index + 1 >= memberIds.length ? 0 : index + 1
     }
+
+    // one click: the projector displays left to right, skipping the one this window is on (the operator's monitor)
+    function autoAssign() {
+        const cx = window.screenX + window.outerWidth / 2
+        const cy = window.screenY + window.outerHeight / 2
+        const inside = (d: DisplayInfo) => cx >= d.bounds.x && cx < d.bounds.x + d.bounds.width && cy >= d.bounds.y && cy < d.bounds.y + d.bounds.height
+        const candidates = displays.filter((d) => !inside(d)).sort((a, b) => a.bounds.x - b.bounds.x || a.bounds.y - b.bounds.y)
+        candidates.slice(0, memberIds.length).forEach((d, i) => assignBlendDisplay(group.groupId, i, d))
+        clickIndex = 0
+        projector = 0
+    }
+    $: canAutoAssign = displays.length > memberIds.length
 
     function identify() {
         send(
@@ -115,7 +131,10 @@
         <MaterialButton variant="text" icon="refresh" title="screen.blend_refresh_displays" on:click={loadDisplays} />
         <MaterialButton variant="outlined" on:click={identify}><T id="settings.identify_screens" /></MaterialButton>
     </div>
-    <p class="hint"><T id="screen.blend_displays_tip" /> <b>{translateText("screen.blend_projector")} {projector + 1}</b></p>
+    <p class="hint"><T id="screen.blend_displays_tip" /> <b>{translateText("screen.blend_projector")} {Math.min(clickIndex, memberIds.length - 1) + 1}</b></p>
+    {#if canAutoAssign}
+        <MaterialButton variant="outlined" icon="screen" on:click={autoAssign}><T id="screen.blend_auto_assign" /></MaterialButton>
+    {/if}
 
     <div class="map" style="width: {MAP_W}px; height: {MAP_H}px;">
         {#each displays as display (display.id)}

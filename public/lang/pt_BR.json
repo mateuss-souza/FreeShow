@@ -87,7 +87,8 @@
         "blend_display_width": "Largura da tela",
         "blend_display_height": "Altura da tela",
         "blend_area_x": "X da área usada",
-        "blend_area_y": "Y da área usada"
+        "blend_area_y": "Y da área usada",
+        "blend_auto_assign": "Colocar projetores em ordem (esquerda para a direita)"
     },
     "about": {
         "check_updates": "Verificar por atualizações",
