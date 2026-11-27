@@ -13,3 +13,9 @@ publish:
     repo: FreeShow
     releaseType: prerelease
     channel: blend
+
+# the in-app update reinstalls silently: put the shortcuts back every time, so the app is always easy to find
+nsis:
+    createDesktopShortcut: always
+    createStartMenuShortcut: true
+    shortcutName: FreeShow
