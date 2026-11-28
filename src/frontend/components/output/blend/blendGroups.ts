@@ -8,7 +8,7 @@
 import { get } from "svelte/store"
 import { uid } from "uid"
 import type { BlendGroupConfig, BlendGroupMember, BlendPattern, BlendProjectorAdjust, Output, Outputs } from "../../../../types/Output"
-import { outputs, styles } from "../../../stores"
+import { outputs, saved, styles } from "../../../stores"
 import { OUTPUT } from "../../../../types/Channels"
 import { send } from "../../../utils/request"
 import { clone } from "../../helpers/array"
@@ -49,6 +49,7 @@ export function createBlendGroup(memberIds: string[]): string | null {
     const groupId = uid()
     const styleId = createCanvasStyle(first.style, config)
 
+    markUnsaved()
     outputs.update((a) => {
         members.forEach((id, index) => {
             if (!a[id]) return
@@ -66,6 +67,7 @@ export function createBlendGroup(memberIds: string[]): string | null {
 
 export function removeBlendGroup(groupId: string) {
     let styleId = ""
+    markUnsaved()
     outputs.update((a) => {
         Object.values(a).forEach((output) => {
             const group = blendGroupOf(output)
@@ -84,6 +86,7 @@ export function removeBlendGroup(groupId: string) {
     if (!styleId) return
     const stillUsed = Object.values(get(outputs)).some((o) => o.style === styleId)
     if (stillUsed) return
+    markUnsaved()
     styles.update((a) => {
         delete a[styleId]
         return a
@@ -125,6 +128,7 @@ export function setBlendPattern(groupId: string, pattern: BlendPattern) {
 function updateGroup(groupId: string, change: (group: BlendGroupMember) => void) {
     let config: BlendGroupConfig | null = null
     let styleId = ""
+    markUnsaved()
     outputs.update((a) => {
         Object.values(a).forEach((output) => {
             const group = blendGroupOf(output)
@@ -141,6 +145,7 @@ function updateGroup(groupId: string, change: (group: BlendGroupMember) => void)
 function createCanvasStyle(baseStyleId: string | undefined, config: BlendGroupConfig): string {
     const id = uid()
     const size = canvasSize(config)
+    markUnsaved()
     styles.update((a) => {
         const base = baseStyleId && a[baseStyleId] ? clone(a[baseStyleId]) : { name: "" }
         a[id] = { ...base, name: `Edge blend ${size.width}×${size.height}`, aspectRatio: { width: size.width, height: size.height } }
@@ -155,6 +160,7 @@ function fitCanvasStyle(styleId: string, config: BlendGroupConfig) {
     if (!current) return
     const ratio = current.aspectRatio
     if (ratio?.width === size.width && ratio?.height === size.height) return
+    markUnsaved()
     styles.update((a) => {
         if (!a[styleId]) return a
         a[styleId].aspectRatio = { ...(a[styleId].aspectRatio || {}), width: size.width, height: size.height, outputResolutionAsRatio: false }
@@ -180,6 +186,7 @@ export function assignBlendDisplay(groupId: string, index: number, display: Disp
     if (!outputId || !all[outputId]) return
 
     const bounds = { x: display.bounds.x, y: display.bounds.y, width: display.bounds.width, height: display.bounds.height }
+    markUnsaved()
     outputs.update((a) => {
         if (!a[outputId]) return a
         a[outputId].bounds = bounds
@@ -213,4 +220,10 @@ export function syncBlendSize(groupId: string, width: number, height: number) {
             adjust: (config.adjust || []).map((a) => ({ ...a, areaX: Math.round((a?.areaX || 0) * rx), areaY: Math.round((a?.areaY || 0) * ry) }))
         })
     })
+}
+
+// outputs and styles are not watched for unsaved changes (their live "out" state changes all the time),
+// so without this the blend settings were lost when FreeShow was closed or updated
+function markUnsaved() {
+    saved.set(false)
 }

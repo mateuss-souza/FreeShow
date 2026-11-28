@@ -1,3 +1,4 @@
+import type { Outputs } from "../../types/Output"
 import { get } from "svelte/store"
 import { Main } from "../../types/IPC/Main"
 import type { Projects } from "../../types/Projects"
@@ -408,6 +409,13 @@ export function unsavedUpdater() {
 }
 
 const customSavedListener = {
+    outputs: (data: Outputs) => {
+        if (!data) return data
+        Object.values(data).forEach((output) => {
+            if (output) delete (output as any).out
+        })
+        return data
+    },
     showsCache: (data: Shows) => {
         if (!data) return data
         Object.keys(data).forEach((id) => {
@@ -466,7 +474,8 @@ const saveList: { [key in SaveList]: any } = {
     mediaOptions,
     openedFolders: null,
     outLocked: null,
-    outputs: null,
+    // watched without the live "out" state (fork: output and blend settings were lost on close)
+    outputs,
     sorted: null,
     styles,
     profiles,
