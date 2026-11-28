@@ -1,13 +1,14 @@
 <script lang="ts">
     // magnifying glass in the top bar (new interface)
+    import { dictionary } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
     import { searchPaletteOpen } from "./searchActions"
 </script>
 
-<button class="searchButton" title="{translateText('redesign.search_label')} [Ctrl+F]" aria-label={translateText("redesign.search_label")} on:click={() => searchPaletteOpen.set(true)}>
+<button class="searchButton" title="{translateText('redesign.search_label', $dictionary)} [Ctrl+F]" aria-label={translateText("redesign.search_label", $dictionary)} on:click={() => searchPaletteOpen.set(true)}>
     <Icon id="search" size={1.4} white />
-    <span>{translateText("redesign.search_button")}</span>
+    <span>{translateText("redesign.search_button", $dictionary)}</span>
     <kbd>Ctrl F</kbd>
 </button>
 

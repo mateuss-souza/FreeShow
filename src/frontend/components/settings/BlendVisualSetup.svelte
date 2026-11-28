@@ -71,6 +71,8 @@
         projector = 0
     }
     $: canAutoAssign = displays.length > memberIds.length
+    // a projector whose output was deleted can't be put on a display
+    $: missingOutputs = memberIds.map((id, i) => ($outputs[id] ? -1 : i)).filter((i) => i >= 0)
 
     function identify() {
         send(
@@ -147,6 +149,9 @@
         {/each}
     </div>
 
+    {#if missingOutputs.length}
+        <p class="error"><T id="screen.blend_missing_outputs" /> ({missingOutputs.map((i) => translateText("screen.blend_projector") + " " + (i + 1)).join(", ")})</p>
+    {/if}
     {#if scaled.length}
         <p class="warning"><T id="screen.blend_scale_warning" /> ({Math.round((scaled[0].scaleFactor || 1) * 100)}%)</p>
     {/if}
@@ -169,7 +174,7 @@
             <button class="projector" class:selected={projector === i} style="left: {slice.canvasX * stripScale}px; width: {slice.width * stripScale}px; top: {i % 2 ? 8 : 0}px; height: {stripH - 8}px;" on:click={() => (projector = i)}>
                 <b>{i + 1}</b>
                 <span>{$outputs[memberIds[i]]?.name || ""}</span>
-                <span class="small">{display ? display.label || physical(display) : translateText("screen.blend_no_display")}</span>
+                <span class="small">{!$outputs[memberIds[i]] ? translateText("screen.blend_output_deleted") : display ? display.label || physical(display) : translateText("screen.blend_no_display")}</span>
             </button>
         {/each}
         {#each config.overlaps as overlap, seam}
@@ -264,6 +269,11 @@
     }
     .res {
         opacity: 0.8;
+    }
+    .error {
+        font-size: 0.85em;
+        color: #ff8a8a;
+        line-height: 1.4;
     }
     .warning {
         font-size: 0.85em;

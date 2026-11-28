@@ -88,7 +88,9 @@
         "blend_display_height": "Altura da tela",
         "blend_area_x": "X da área usada",
         "blend_area_y": "Y da área usada",
-        "blend_auto_assign": "Colocar projetores em ordem (esquerda para a direita)"
+        "blend_auto_assign": "Colocar projetores em ordem (esquerda para a direita)",
+        "blend_missing_outputs": "Alguns projetores desta mesclagem não têm mais saída (ela foi apagada). Remova a mesclagem, crie as saídas que faltam em Nova saída e crie a mesclagem de novo.",
+        "blend_output_deleted": "saída apagada"
     },
     "about": {
         "check_updates": "Verificar por atualizações",

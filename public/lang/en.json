@@ -89,7 +89,9 @@
         "blend_display_height": "Display height",
         "blend_area_x": "Used area X",
         "blend_area_y": "Used area Y",
-        "blend_auto_assign": "Put the projectors in order (left to right)"
+        "blend_auto_assign": "Put the projectors in order (left to right)",
+        "blend_missing_outputs": "Some projectors of this blend have no output anymore (it was deleted). Remove the blend, create the missing outputs with New output, then create the blend again.",
+        "blend_output_deleted": "output deleted"
     },
     "about": {
         "check_updates": "Look for updates",
