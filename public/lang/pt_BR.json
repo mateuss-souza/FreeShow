@@ -1913,7 +1913,11 @@
         "mode_following": "Seguindo",
         "mode_manual": "Manual",
         "expand": "Mostrar vídeo",
-        "collapse": "Esconder vídeo"
+        "collapse": "Esconder vídeo",
+        "timeline_tip": "Clique para ir a um ponto. Arraste uma bolinha para mover aquela troca; clique numa bolinha para ouvir um pouco antes dela.",
+        "change": "Troca de slide",
+        "larger": "Player maior",
+        "smaller": "Player menor"
     },
     "redesign": {
         "interface": "Interface",

@@ -10,6 +10,7 @@
     import MaterialButton from "../inputs/MaterialButton.svelte"
     import { closeSession, onPlayerTime, recordingEvents, registerPlayer, resumeFollowing, startFollowing, startRecording, stopFollowing, stopRecording, syncClock, syncSession } from "./playbackSync"
     import { formatTime } from "./syncMath"
+    import PlaybackTimeline from "./PlaybackTimeline.svelte"
 
     // audio comes from this player (the computer's sound output): no autoplay, the operator starts it
     const options = { playerVars: { autoplay: 0, fs: 0, rel: 0, controls: 1, modestbranding: 1 } }
@@ -17,6 +18,8 @@
     let player: any = null
     let timer: NodeJS.Timeout | null = null
     let collapsed = false
+    // a wider player makes the timeline precise enough to place changes
+    let large = false
 
     function onReady(e: any) {
         player = e.detail?.target || null
@@ -54,7 +57,7 @@
 </script>
 
 {#if session}
-    <section class="player" class:recording={session.mode === "recording"} aria-label={translateText("playback_sync.player")}>
+    <section class="player" class:large class:recording={session.mode === "recording"} aria-label={translateText("playback_sync.player")}>
         <header>
             <span class="badge {session.mode}">
                 {#if session.mode === "recording"}<span class="dot"></span>{/if}
@@ -64,6 +67,9 @@
                 <b>{showName}</b>
                 <span>{sync?.name || ""}</span>
             </span>
+            <MaterialButton title={large ? "playback_sync.smaller" : "playback_sync.larger"} on:click={() => (large = !large)}>
+                <Icon id="fullscreen" size={1} white={!large} />
+            </MaterialButton>
             <MaterialButton title={collapsed ? "playback_sync.expand" : "playback_sync.collapse"} on:click={() => (collapsed = !collapsed)}>
                 <Icon id={collapsed ? "expand" : "remove"} size={1} white />
             </MaterialButton>
@@ -77,6 +83,8 @@
                 <YouTubePlayer videoId={session.videoId} {options} on:ready={onReady} on:end={onEnd} />
             {/key}
         </div>
+
+        <PlaybackTimeline showId={session.showId} syncId={session.syncId} events={sync?.events || []} />
 
         <div class="status">
             <span class="time">{formatTime($syncClock.time)}{$syncClock.duration ? " / " + formatTime($syncClock.duration) : ""}</span>
@@ -131,6 +139,16 @@
         background-color: var(--primary-darker);
         border: 2px solid var(--primary-lighter);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    }
+    .player.large {
+        width: min(900px, calc(100vw - 24px));
+    }
+    .player.large .video {
+        width: 100%;
+        height: 360px;
+    }
+    .player.large .video.collapsed {
+        height: 0;
     }
     .player.recording {
         border-color: #ff5a5a;

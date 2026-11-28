@@ -1948,7 +1948,11 @@
         "mode_following": "Following",
         "mode_manual": "Manual",
         "expand": "Show video",
-        "collapse": "Hide video"
+        "collapse": "Hide video",
+        "timeline_tip": "Click to jump. Drag a dot to move that slide change; click a dot to hear it from just before.",
+        "change": "Slide change",
+        "larger": "Bigger player",
+        "smaller": "Smaller player"
     },
     "redesign": {
         "interface": "Interface",
