@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { CORNERS, type CornerId } from "../output/blend/blendMath"
     import { translateText } from "../../utils/language"
     import type { BlendCurve } from "../../../types/Output"
     import { outputs } from "../../stores"
@@ -43,6 +44,17 @@
     $: if (group && projector >= group.members.length) projector = 0
     $: projectorOptions = group ? group.members.map((id, i) => ({ value: String(i), label: `${i + 1} · ${$outputs[id]?.name || ""}` })) : []
     $: adjust = config?.adjust?.[projector] || {}
+
+    // corner pin of the selected projector
+    const cornerIds = CORNERS
+    $: corners = (adjust?.corners || {}) as { [K in CornerId]?: [number, number] }
+    function setCorner(id: CornerId, axis: 0 | 1, value: number) {
+        const next = { ...corners }
+        const current: [number, number] = [...(next[id] || [0, 0])] as [number, number]
+        current[axis] = Number(value) || 0
+        next[id] = current
+        setBlendAdjust(groupId, projector, { corners: next })
+    }
 </script>
 
 {#if !group || !config || !size}
@@ -75,6 +87,19 @@
         <MaterialNumberInput label="screen.blend_offset_x (px)" value={adjust.offsetX || 0} defaultValue={0} min={-500} max={500} on:change={(e) => setBlendAdjust(groupId, projector, { offsetX: e.detail })} />
         <MaterialNumberInput label="screen.blend_offset_y (px)" value={adjust.offsetY || 0} defaultValue={0} min={-500} max={500} on:change={(e) => setBlendAdjust(groupId, projector, { offsetY: e.detail })} />
     </InputRow>
+    <p class="sectionTip"><T id="screen.blend_corners_tip" /></p>
+    <div class="corners">
+        {#each cornerIds as id}
+            <div class="corner">
+                <span>{translateText("screen.blend_corner_" + id)}</span>
+                <InputRow>
+                    <MaterialNumberInput label="ΔX" value={corners[id]?.[0] || 0} defaultValue={0} min={-300} max={300} on:change={(e) => setCorner(id, 0, e.detail)} />
+                    <MaterialNumberInput label="ΔY" value={corners[id]?.[1] || 0} defaultValue={0} min={-300} max={300} on:change={(e) => setCorner(id, 1, e.detail)} />
+                </InputRow>
+            </div>
+        {/each}
+    </div>
+    <MaterialButton variant="outlined" icon="reset" on:click={() => setBlendAdjust(groupId, projector, { corners: {} })}><T id="screen.blend_corners_reset" /></MaterialButton>
     <InputRow>
         <MaterialNumberInput label="screen.blend_area_x (px)" value={adjust.areaX || 0} defaultValue={0} min={0} max={(config.displayWidth || config.projectorWidth) - config.projectorWidth} on:change={(e) => setBlendAdjust(groupId, projector, { areaX: e.detail })} />
         <MaterialNumberInput label="screen.blend_area_y (px)" value={adjust.areaY || 0} defaultValue={0} min={0} max={(config.displayHeight || config.projectorHeight) - config.projectorHeight} on:change={(e) => setBlendAdjust(groupId, projector, { areaY: e.detail })} />
@@ -98,6 +123,16 @@
 {/if}
 
 <style>
+    .corners {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+        margin: 4px 0;
+    }
+    .corner span {
+        font-size: 0.85em;
+        opacity: 0.8;
+    }
     .sectionTip {
         font-size: 0.85em;
         opacity: 0.8;

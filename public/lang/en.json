@@ -91,7 +91,13 @@
         "blend_area_y": "Used area Y",
         "blend_auto_assign": "Put the projectors in order (left to right)",
         "blend_missing_outputs": "Some projectors of this blend have no output anymore (it was deleted). Remove the blend, create the missing outputs with New output, then create the blend again.",
-        "blend_output_deleted": "output deleted"
+        "blend_output_deleted": "output deleted",
+        "blend_corners_tip": "Corner pin (like ProPresenter's): moves each corner of this projector's image by a few px to fix ghosting at the seams. Positive values move away from the screen's center.",
+        "blend_corner_tl": "Top left",
+        "blend_corner_tr": "Top right",
+        "blend_corner_bl": "Bottom left",
+        "blend_corner_br": "Bottom right",
+        "blend_corners_reset": "Reset corners"
     },
     "about": {
         "check_updates": "Look for updates",

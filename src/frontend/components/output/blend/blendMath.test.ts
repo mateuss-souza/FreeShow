@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { BLEND_CURVES, blackLift, blendPixel, canvasSize, getSlices, normalizeBlendGroup, ramp, signalMask, simulateScreenLight, usedArea } from "./blendMath"
+import { BLEND_CURVES, blackLift, blendPixel, canvasSize, getSlices, normalizeBlendGroup, ramp, signalMask, simulateScreenLight, usedArea, cornerPinHomography, cornerPinCss, applyHomography } from "./blendMath"
 
 const three = normalizeBlendGroup({ projectors: 3, projectorWidth: 1920, projectorHeight: 1080, overlaps: [300, 300] })
 
@@ -109,5 +109,28 @@ describe("used area (ProPresenter's custom output destination)", () => {
         const full = normalizeBlendGroup({ projectorWidth: 1920, projectorHeight: 1080 })
         expect(full.displayWidth).toBe(1920)
         expect(usedArea(full, 0)).toEqual({ left: 0, top: 0, width: 1, height: 1 })
+    })
+})
+
+describe("corner pin (ProPresenter's Fixação de canto)", () => {
+    it("does nothing with all corners at zero", () => {
+        expect(cornerPinHomography(1920, 1080, {})).toBeNull()
+        expect(cornerPinCss(1920, 1080, { tl: [0, 0] })).toBe("")
+    })
+    it("moves each corner, positive away from the center", () => {
+        // the church's projector 3
+        const corners = { tl: [0, -2], tr: [-5, -13], bl: [-3, -13], br: [0, -28] } as any
+        const m = cornerPinHomography(1920, 1080, corners)!
+        const near = (p: [number, number], q: [number, number]) => {
+            expect(p[0]).toBeCloseTo(q[0], 6)
+            expect(p[1]).toBeCloseTo(q[1], 6)
+        }
+        near(applyHomography(m, 0, 0), [0, 2])
+        near(applyHomography(m, 1920, 0), [1915, 13])
+        near(applyHomography(m, 0, 1080), [3, 1067])
+        near(applyHomography(m, 1920, 1080), [1920, 1052])
+    })
+    it("makes a CSS matrix3d", () => {
+        expect(cornerPinCss(1920, 1080, { tl: [-8, 0] })).toMatch(/^matrix3d\((-?[\d.e-]+,){15}-?[\d.e-]+\)$/)
     })
 })

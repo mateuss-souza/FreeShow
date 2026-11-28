@@ -90,7 +90,13 @@
         "blend_area_y": "Y da área usada",
         "blend_auto_assign": "Colocar projetores em ordem (esquerda para a direita)",
         "blend_missing_outputs": "Alguns projetores desta mesclagem não têm mais saída (ela foi apagada). Remova a mesclagem, crie as saídas que faltam em Nova saída e crie a mesclagem de novo.",
-        "blend_output_deleted": "saída apagada"
+        "blend_output_deleted": "saída apagada",
+        "blend_corners_tip": "Fixação de canto (como no ProPresenter): move cada canto da imagem deste projetor alguns px para corrigir o fantasma nas emendas. Valores positivos se afastam do centro da tela.",
+        "blend_corner_tl": "Superior esquerdo",
+        "blend_corner_tr": "Superior direito",
+        "blend_corner_bl": "Inferior esquerdo",
+        "blend_corner_br": "Inferior direito",
+        "blend_corners_reset": "Redefinir cantos"
     },
     "about": {
         "check_updates": "Verificar por atualizações",

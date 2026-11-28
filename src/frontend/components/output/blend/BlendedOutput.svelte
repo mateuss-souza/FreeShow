@@ -5,7 +5,7 @@
     import type { BlendGroupMember } from "../../../../types/Output"
     import Output from "../Output.svelte"
     import { getStyleResolution } from "../../slide/getStyleResolution"
-    import { canvasSize, maskRows, normalizeBlendGroup, usedArea } from "./blendMath"
+    import { canvasSize, cornerPinCss, maskRows, normalizeBlendGroup, usedArea } from "./blendMath"
     import { BlendRenderer } from "./blendShader"
 
     export let outputId: string
@@ -21,7 +21,9 @@
     $: slice = rows.slice
     // the used area inside the window (ProPresenter's custom destination); outside it stays black
     $: area = usedArea(config, index)
-    $: areaStyle = `left: ${area.left * 100}%; top: ${area.top * 100}%; width: ${area.width * 100}%; height: ${area.height * 100}%;`
+    // corner pin (keystone fine-tuning), in the window's px
+    $: pin = cornerPinCss(width, height, config.adjust?.[index]?.corners)
+    $: areaStyle = `left: ${area.left * 100}%; top: ${area.top * 100}%; width: ${area.width * 100}%; height: ${area.height * 100}%;${pin ? ` transform: ${pin}; transform-origin: 0 0;` : ""}`
 
     // the window may not be exactly the projector's pixel size (display scaling): stretch the slice to fill it
     $: scaleX = width ? width / slice.width : 1

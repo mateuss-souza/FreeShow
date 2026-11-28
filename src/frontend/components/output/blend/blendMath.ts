@@ -198,3 +198,89 @@ export function usedArea(cfg: BlendGroupConfig, index: number) {
     const y = clamp(Number(adjust.areaY) || 0, 0, displayHeight - cfg.projectorHeight)
     return { left: x / displayWidth, top: y / displayHeight, width: cfg.projectorWidth / displayWidth, height: cfg.projectorHeight / displayHeight }
 }
+
+// CORNER PIN (keystone fine-tuning per projector)
+
+export const CORNERS = ["tl", "tr", "bl", "br"] as const
+export type CornerId = (typeof CORNERS)[number]
+
+/** where each corner of a w×h area ends up; offsets use ProPresenter's sign: positive moves away from the center */
+export function cornerPoints(w: number, h: number, corners: { [K in CornerId]?: [number, number] } | undefined) {
+    const get = (id: CornerId) => {
+        const v = corners?.[id] || [0, 0]
+        return [Number(v[0]) || 0, Number(v[1]) || 0]
+    }
+    const [tlx, tly] = get("tl")
+    const [trx, try_] = get("tr")
+    const [blx, bly] = get("bl")
+    const [brx, bry] = get("br")
+    return {
+        tl: [-tlx, -tly],
+        tr: [w + trx, -try_],
+        bl: [-blx, h + bly],
+        br: [w + brx, h + bry]
+    } as { [K in CornerId]: [number, number] }
+}
+
+export function hasCornerPin(corners: { [K in CornerId]?: [number, number] } | undefined) {
+    return CORNERS.some((id) => (Number(corners?.[id]?.[0]) || 0) !== 0 || (Number(corners?.[id]?.[1]) || 0) !== 0)
+}
+
+/** 3x3 projective transform taking the w×h rectangle to the four corner points (row-major, h33 = 1) */
+export function cornerPinHomography(w: number, h: number, corners: { [K in CornerId]?: [number, number] } | undefined): number[] | null {
+    if (!w || !h || !hasCornerPin(corners)) return null
+    const p = cornerPoints(w, h, corners)
+    const src: [number, number][] = [
+        [0, 0],
+        [w, 0],
+        [0, h],
+        [w, h]
+    ]
+    const dst = [p.tl, p.tr, p.bl, p.br]
+    // solve the 8 unknowns of the homography
+    const A: number[][] = []
+    const b: number[] = []
+    for (let i = 0; i < 4; i++) {
+        const [x, y] = src[i]
+        const [u, v] = dst[i]
+        A.push([x, y, 1, 0, 0, 0, -u * x, -u * y])
+        b.push(u)
+        A.push([0, 0, 0, x, y, 1, -v * x, -v * y])
+        b.push(v)
+    }
+    const s = solve(A, b)
+    if (!s) return null
+    return [s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], 1]
+}
+
+/** CSS matrix3d for an element at the area's top left with transform-origin 0 0 */
+export function cornerPinCss(w: number, h: number, corners: { [K in CornerId]?: [number, number] } | undefined): string {
+    const m = cornerPinHomography(w, h, corners)
+    if (!m) return ""
+    const [a, b, c, d, e, f, g, hh, i] = m
+    // column-major 4x4, z untouched
+    const values = [a, d, 0, g, b, e, 0, hh, 0, 0, 1, 0, c, f, 0, i]
+    return `matrix3d(${values.map((v) => +v.toPrecision(15)).join(",")})`
+}
+
+export function applyHomography(m: number[], x: number, y: number): [number, number] {
+    const w = m[6] * x + m[7] * y + m[8]
+    return [(m[0] * x + m[1] * y + m[2]) / w, (m[3] * x + m[4] * y + m[5]) / w]
+}
+
+function solve(A: number[][], b: number[]): number[] | null {
+    const n = b.length
+    const M = A.map((row, i) => [...row, b[i]])
+    for (let col = 0; col < n; col++) {
+        let pivot = col
+        for (let r = col + 1; r < n; r++) if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r
+        if (Math.abs(M[pivot][col]) < 1e-12) return null
+        ;[M[col], M[pivot]] = [M[pivot], M[col]]
+        for (let r = 0; r < n; r++) {
+            if (r === col) continue
+            const factor = M[r][col] / M[col][col]
+            for (let k = col; k <= n; k++) M[r][k] -= factor * M[col][k]
+        }
+    }
+    return M.map((row, i) => row[n] / row[i])
+}

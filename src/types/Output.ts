@@ -113,6 +113,15 @@ export interface BlendProjectorAdjust {
     /** where the used area starts on this projector's display, in display px (ProPresenter's custom output destination) */
     areaX?: number
     areaY?: number
+    /** corner pin (ProPresenter's "Fixação de canto"): [ΔX, ΔY] per corner in display px, positive moves away from the screen's center */
+    corners?: BlendCorners
+}
+
+export interface BlendCorners {
+    tl?: [number, number]
+    tr?: [number, number]
+    bl?: [number, number]
+    br?: [number, number]
 }
 
 export interface BlendGroupConfig {
