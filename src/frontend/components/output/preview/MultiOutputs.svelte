@@ -18,7 +18,8 @@
 
     export let disableTransitions = false
 
-    $: allEnabledOuts = sortObject(sortByName(keysToID($outputs).filter((a) => a.enabled)), "stageOutput")
+    // a blend group shows the same image on every projector: preview only its first output (fork)
+    $: allEnabledOuts = sortObject(sortByName(keysToID($outputs).filter((a) => a.enabled && !(a.blendGroup && a.blendGroup.index > 0))), "stageOutput")
     $: outs = allEnabledOuts.length > 1 ? allEnabledOuts.filter((a) => !a.hideFromPreview) : allEnabledOuts
     $: hiddenOuts = allEnabledOuts.length > 1 ? allEnabledOuts.filter((a) => a.hideFromPreview) : []
 
